@@ -27,6 +27,8 @@ function MatchGame() {
     handleBackspace,
     handleSubmit,
     forfeitMatch,
+    rowAnimation,
+    lastTypedIndex,
   } = useMultiplayer(matchId);
 
   const handlePlayAgain = () => {
@@ -88,6 +90,9 @@ function MatchGame() {
           onKeyPress={handleKeyPress}
           onSubmit={handleSubmit}
           onBackspace={handleBackspace}
+          rowAnimation={rowAnimation}
+          disabled={!state.isMyTurn || state.matchOver}
+          lastTypedIndex={lastTypedIndex}
         />
 
         {!state.isMyTurn && !state.matchOver && (

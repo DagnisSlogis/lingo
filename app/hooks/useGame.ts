@@ -1,10 +1,11 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import type { BoardRow } from "~/components/GameBoard";
+import type { BoardRow, RowAnimation } from "~/components/GameBoard";
 import type { TileState } from "~/components/Tile";
 import { validateGuess, isWinningGuess, calculateScore } from "~/lib/wordValidator";
 import { generatePlayerName, generatePlayerId } from "~/lib/nameGenerator";
+import { useSound } from "./useSound";
 
 type Difficulty = "easy" | "medium" | "hard";
 
@@ -29,6 +30,7 @@ export function useGame(difficulty: Difficulty) {
   const wordLength = WORD_LENGTHS[difficulty];
   const randomWord = useQuery(api.words.getRandomWord, { difficulty });
   const submitScore = useMutation(api.leaderboard.submitScore);
+  const { play: playSound } = useSound();
 
   const [targetWord, setTargetWord] = useState<string>("");
   const [board, setBoard] = useState<BoardRow[]>(() => createEmptyBoard(wordLength));
@@ -38,6 +40,8 @@ export function useGame(difficulty: Difficulty) {
   const [score, setScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [won, setWon] = useState(false);
+  const [rowAnimation, setRowAnimation] = useState<{ row: number; type: RowAnimation } | undefined>(undefined);
+  const lastTypedIndex = useRef(-1);
   const [playerId] = useState(() => {
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("lingo_player_id");
@@ -80,6 +84,9 @@ export function useGame(difficulty: Difficulty) {
       if (gameOver || !targetWord) return;
       if (currentGuess.length >= wordLength) return;
 
+      playSound("letterPlaced");
+      lastTypedIndex.current = currentGuess.length;
+
       // Don't allow changing the first letter (it's revealed)
       if (currentGuess.length === 0 && key.toLowerCase() !== targetWord[0].toLowerCase()) {
         setCurrentGuess(targetWord[0] + key);
@@ -87,7 +94,7 @@ export function useGame(difficulty: Difficulty) {
         setCurrentGuess((prev) => prev + key);
       }
     },
-    [gameOver, currentGuess, wordLength, targetWord]
+    [gameOver, currentGuess, wordLength, targetWord, playSound]
   );
 
   const handleBackspace = useCallback(() => {
@@ -98,6 +105,11 @@ export function useGame(difficulty: Difficulty) {
     }
   }, [gameOver, currentGuess, targetWord]);
 
+  const triggerRowAnimation = useCallback((row: number, type: RowAnimation) => {
+    setRowAnimation({ row, type });
+    setTimeout(() => setRowAnimation(undefined), type === "bounce" ? 700 : 500);
+  }, []);
+
   const handleSubmit = useCallback(() => {
     if (gameOver || !targetWord) return;
 
@@ -107,7 +119,12 @@ export function useGame(difficulty: Difficulty) {
       guess = targetWord[0] + guess;
     }
 
-    if (guess.length !== wordLength) return;
+    if (guess.length !== wordLength) {
+      // Shake animation for incomplete guess
+      triggerRowAnimation(currentRow, "shake");
+      playSound("wrong");
+      return;
+    }
 
     const states = validateGuess(guess, targetWord);
     const isWin = isWinningGuess(states);
@@ -127,18 +144,29 @@ export function useGame(difficulty: Difficulty) {
       setScore((prev) => prev + pointsGained);
       setWon(true);
       setGameOver(true);
+      // Bounce animation and win sound
+      triggerRowAnimation(currentRow, "bounce");
+      playSound("win");
     } else if (currentRow >= MAX_ROWS - 1) {
-      // Lost this round
+      // Lost this round - shake animation
+      triggerRowAnimation(currentRow, "shake");
+      playSound("lose");
       const newHearts = hearts - 1;
       setHearts(newHearts);
       setWon(false);
       setGameOver(true);
     } else {
-      // Continue to next row
+      // Continue to next row - correct sound if has some correct letters
+      const hasCorrect = states.some((s) => s === "correct");
+      if (hasCorrect) {
+        playSound("correct");
+      } else {
+        playSound("wrong");
+      }
       setCurrentRow((prev) => prev + 1);
       setCurrentGuess(targetWord[0]); // Start next guess with first letter
     }
-  }, [gameOver, currentGuess, wordLength, targetWord, currentRow, hearts]);
+  }, [gameOver, currentGuess, wordLength, targetWord, currentRow, hearts, playSound, triggerRowAnimation]);
 
   const startNewGame = useCallback(() => {
     // If game over (no hearts), reset everything
@@ -186,5 +214,7 @@ export function useGame(difficulty: Difficulty) {
     handleBackspace,
     startNewGame,
     submitToLeaderboard,
+    rowAnimation,
+    lastTypedIndex: lastTypedIndex.current,
   };
 }

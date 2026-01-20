@@ -30,6 +30,8 @@ function SoloGame() {
     handleBackspace,
     startNewGame,
     submitToLeaderboard,
+    rowAnimation,
+    lastTypedIndex,
   } = useGame(validDifficulty);
 
   return (
@@ -47,6 +49,9 @@ function SoloGame() {
         onKeyPress={handleKeyPress}
         onSubmit={handleSubmit}
         onBackspace={handleBackspace}
+        rowAnimation={rowAnimation}
+        disabled={gameOver}
+        lastTypedIndex={lastTypedIndex}
       />
 
       <div className="game-controls">

@@ -1,10 +1,11 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import type { BoardRow } from "~/components/GameBoard";
+import type { BoardRow, RowAnimation } from "~/components/GameBoard";
 import type { TileState } from "~/components/Tile";
-import { validateGuess } from "~/lib/wordValidator";
+import { validateGuess, isWinningGuess } from "~/lib/wordValidator";
 import { generatePlayerName, generatePlayerId } from "~/lib/nameGenerator";
+import { useSound } from "./useSound";
 
 const MAX_ROWS = 6;
 const TURN_TIME_LIMIT = 30; // seconds
@@ -58,6 +59,8 @@ function createEmptyBoard(wordLength: number): BoardRow[] {
 }
 
 export function useMultiplayer(matchId: string) {
+  const { play: playSound } = useSound();
+
   const [playerId] = useState(() => {
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("lingo_player_id");
@@ -83,7 +86,10 @@ export function useMultiplayer(matchId: string) {
   const [currentGuess, setCurrentGuess] = useState("");
   const [timeRemaining, setTimeRemaining] = useState(TURN_TIME_LIMIT);
   const [lastProcessedGuessCount, setLastProcessedGuessCount] = useState(0);
+  const [rowAnimation, setRowAnimation] = useState<{ row: number; type: RowAnimation } | undefined>(undefined);
+  const lastTypedIndex = useRef(-1);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const previousTurnRef = useRef<string | null>(null);
 
   // Real-time match subscription - use type assertion for new API
   const match = useQuery((api as any).matches?.getMatch, { matchId }) as Match | undefined | null;
@@ -159,11 +165,58 @@ export function useMultiplayer(matchId: string) {
     }
   }, [match, lastProcessedGuessCount]);
 
+  // Helper for triggering animations
+  const triggerRowAnimation = useCallback((row: number, type: RowAnimation) => {
+    setRowAnimation({ row, type });
+    setTimeout(() => setRowAnimation(undefined), type === "bounce" ? 700 : 500);
+  }, []);
+
+  // Sound and animation effects when new guess is added
+  useEffect(() => {
+    if (!match || match.guesses.length === 0) return;
+
+    const guessCount = match.guesses.length;
+
+    // Only trigger if a new guess was added
+    if (guessCount > lastProcessedGuessCount && lastProcessedGuessCount > 0) {
+      const lastGuess = match.guesses[guessCount - 1];
+      const lastGuessRow = guessCount - 1;
+
+      if (lastGuess && lastGuess !== "") {
+        const states = validateGuess(lastGuess, match.currentWord);
+        const isWin = isWinningGuess(states);
+
+        if (isWin) {
+          triggerRowAnimation(lastGuessRow, "bounce");
+          // Determine if this player won or lost
+          const wasMyGuess = previousTurnRef.current === playerId;
+          if (wasMyGuess) {
+            playSound("win");
+          } else {
+            playSound("lose");
+          }
+        } else {
+          // Regular guess - play opponent guess sound if it wasn't my turn
+          const wasOpponentGuess = previousTurnRef.current !== playerId;
+          if (wasOpponentGuess) {
+            playSound("opponentGuess");
+          }
+        }
+      }
+    }
+  }, [match?.guesses.length, lastProcessedGuessCount, match?.currentWord, playSound, triggerRowAnimation, match?.guesses, playerId]);
+
   // Timer management
   useEffect(() => {
     if (!match || match.status !== "active") return;
 
     const isMyTurn = match.currentTurn === playerId;
+
+    // Play sound when it becomes your turn
+    if (isMyTurn && previousTurnRef.current !== null && previousTurnRef.current !== playerId) {
+      playSound("yourTurn");
+    }
+    previousTurnRef.current = match.currentTurn;
 
     // Reset timer when it becomes your turn
     if (isMyTurn) {
@@ -197,7 +250,7 @@ export function useMultiplayer(matchId: string) {
         timerRef.current = null;
       }
     };
-  }, [match?.currentTurn, match?.status, playerId, matchId, skipTurnMutation]);
+  }, [match?.currentTurn, match?.status, playerId, matchId, skipTurnMutation, playSound]);
 
   // Handle match completion - update ratings
   useEffect(() => {
@@ -233,6 +286,9 @@ export function useMultiplayer(matchId: string) {
       if (match.currentTurn !== playerId) return;
       if (currentGuess.length >= wordLength) return;
 
+      playSound("letterPlaced");
+      lastTypedIndex.current = currentGuess.length;
+
       const firstLetter = match.currentWord[0];
 
       if (currentGuess.length === 0 && key.toLowerCase() !== firstLetter.toLowerCase()) {
@@ -241,7 +297,7 @@ export function useMultiplayer(matchId: string) {
         setCurrentGuess((prev) => prev + key);
       }
     },
-    [match, playerId, currentGuess, wordLength]
+    [match, playerId, currentGuess, wordLength, playSound]
   );
 
   const handleBackspace = useCallback(() => {
@@ -266,7 +322,12 @@ export function useMultiplayer(matchId: string) {
       guess = firstLetter + guess;
     }
 
-    if (guess.length !== wordLength) return;
+    if (guess.length !== wordLength) {
+      // Shake animation for incomplete guess
+      triggerRowAnimation(match.guesses.length, "shake");
+      playSound("wrong");
+      return;
+    }
 
     try {
       if (submitGuessMutation) {
@@ -282,7 +343,7 @@ export function useMultiplayer(matchId: string) {
     } catch (error) {
       console.error("Failed to submit guess:", error);
     }
-  }, [match, playerId, currentGuess, wordLength, matchId, submitGuessMutation]);
+  }, [match, playerId, currentGuess, wordLength, matchId, submitGuessMutation, triggerRowAnimation, playSound]);
 
   const forfeitMatch = useCallback(async () => {
     try {
@@ -323,5 +384,7 @@ export function useMultiplayer(matchId: string) {
     handleBackspace,
     handleSubmit,
     forfeitMatch,
+    rowAnimation,
+    lastTypedIndex: lastTypedIndex.current,
   };
 }

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { LeaderboardModal } from "./LeaderboardModal";
 import { AboutModal } from "./AboutModal";
+import { useSound } from "~/hooks/useSound";
 
 export function MenuBar() {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
@@ -9,6 +10,7 @@ export function MenuBar() {
   const [showAbout, setShowAbout] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const { play: playSound } = useSound();
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -21,25 +23,30 @@ export function MenuBar() {
   }, []);
 
   const handleMenuClick = (menu: string) => {
+    playSound("menuClick");
     setOpenMenu(openMenu === menu ? null : menu);
   };
 
   const handleNewGame = () => {
+    playSound("menuClick");
     setOpenMenu(null);
     navigate({ to: "/solo" });
   };
 
   const handleRankedMode = () => {
+    playSound("menuClick");
     setOpenMenu(null);
     navigate({ to: "/ranked" });
   };
 
   const handleLeaderboard = () => {
+    playSound("menuClick");
     setOpenMenu(null);
     setShowLeaderboard(true);
   };
 
   const handleAbout = () => {
+    playSound("menuClick");
     setOpenMenu(null);
     setShowAbout(true);
   };
