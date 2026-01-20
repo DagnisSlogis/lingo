@@ -25,6 +25,12 @@ interface MultiplayerState {
   isWinner: boolean;
 }
 
+interface RoundOverInfo {
+  word: string;
+  roundNumber: number;
+  roundWinner: "me" | "opponent" | "draw";
+}
+
 interface Match {
   _id: string;
   player1Id: string;
@@ -87,9 +93,13 @@ export function useMultiplayer(matchId: string) {
   const [timeRemaining, setTimeRemaining] = useState(TURN_TIME_LIMIT);
   const [lastProcessedGuessCount, setLastProcessedGuessCount] = useState(0);
   const [rowAnimation, setRowAnimation] = useState<{ row: number; type: RowAnimation } | undefined>(undefined);
+  const [roundOverInfo, setRoundOverInfo] = useState<RoundOverInfo | null>(null);
   const lastTypedIndex = useRef(-1);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const previousTurnRef = useRef<string | null>(null);
+  const previousRoundRef = useRef<number | null>(null);
+  const previousWordRef = useRef<string | null>(null);
+  const previousHeartsRef = useRef<{ p1: number; p2: number } | null>(null);
 
   // Real-time match subscription - use type assertion for new API
   const match = useQuery((api as any).matches?.getMatch, { matchId }) as Match | undefined | null;
@@ -252,6 +262,66 @@ export function useMultiplayer(matchId: string) {
     };
   }, [match?.currentTurn, match?.status, playerId, matchId, skipTurnMutation, playSound]);
 
+  // Track round transitions and show word reveal
+  useEffect(() => {
+    if (!match) return;
+
+    const currentRound = match.currentRound;
+    const currentWord = match.currentWord;
+    const currentP1Hearts = match.player1Hearts;
+    const currentP2Hearts = match.player2Hearts;
+
+    // Initialize refs on first load
+    if (previousRoundRef.current === null) {
+      previousRoundRef.current = currentRound;
+      previousWordRef.current = currentWord;
+      previousHeartsRef.current = { p1: currentP1Hearts, p2: currentP2Hearts };
+      return;
+    }
+
+    // Detect round change
+    if (currentRound > previousRoundRef.current && previousWordRef.current) {
+      const prevP1Hearts = previousHeartsRef.current?.p1 ?? 3;
+      const prevP2Hearts = previousHeartsRef.current?.p2 ?? 3;
+
+      // Determine who won the round based on heart changes
+      let roundWinner: "me" | "opponent" | "draw";
+      const p1LostHeart = currentP1Hearts < prevP1Hearts;
+      const p2LostHeart = currentP2Hearts < prevP2Hearts;
+
+      if (p1LostHeart && p2LostHeart) {
+        // Both lost a heart - it's a draw (no one guessed correctly)
+        roundWinner = "draw";
+      } else if (p1LostHeart) {
+        // Player 1 lost a heart - player 2 won
+        roundWinner = isPlayer1 ? "opponent" : "me";
+      } else if (p2LostHeart) {
+        // Player 2 lost a heart - player 1 won
+        roundWinner = isPlayer1 ? "me" : "opponent";
+      } else {
+        // No hearts lost (shouldn't happen normally)
+        roundWinner = "draw";
+      }
+
+      // Show round over modal
+      setRoundOverInfo({
+        word: previousWordRef.current,
+        roundNumber: previousRoundRef.current,
+        roundWinner,
+      });
+
+      // Auto-dismiss after 3 seconds
+      setTimeout(() => {
+        setRoundOverInfo(null);
+      }, 3000);
+    }
+
+    // Update refs
+    previousRoundRef.current = currentRound;
+    previousWordRef.current = currentWord;
+    previousHeartsRef.current = { p1: currentP1Hearts, p2: currentP2Hearts };
+  }, [match?.currentRound, match?.currentWord, match?.player1Hearts, match?.player2Hearts, isPlayer1, match]);
+
   // Handle match completion - update ratings
   useEffect(() => {
     if (match?.status === "finished" && match.winnerId && opponent) {
@@ -386,5 +456,6 @@ export function useMultiplayer(matchId: string) {
     forfeitMatch,
     rowAnimation,
     lastTypedIndex: lastTypedIndex.current,
+    roundOverInfo,
   };
 }

@@ -1,3 +1,5 @@
+import { PixelIcon } from "./PixelIcon";
+
 interface MatchOverModalProps {
   isWinner: boolean;
   myScore: number;
@@ -27,7 +29,7 @@ export function MatchOverModal({
         </div>
         <div className="window-body">
           <div className="match-result-icon">
-            {isWinner ? "🏆" : "😔"}
+            <PixelIcon name={isWinner ? "trophy" : "sad"} size={48} />
           </div>
 
           <div className="match-result-title">

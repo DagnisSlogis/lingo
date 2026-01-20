@@ -20,6 +20,9 @@ interface GameBoardProps {
   rowAnimation?: { row: number; type: RowAnimation };
   disabled?: boolean;
   lastTypedIndex?: number;
+  gameOver?: boolean;
+  won?: boolean;
+  targetWord?: string;
 }
 
 export function GameBoard({
@@ -33,9 +36,13 @@ export function GameBoard({
   rowAnimation,
   disabled = false,
   lastTypedIndex = -1,
+  gameOver = false,
+  won = false,
+  targetWord = "",
 }: GameBoardProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [popTile, setPopTile] = useState<{ row: number; col: number } | null>(null);
+  const isComposingRef = useRef(false);
 
   useEffect(() => {
     if (!disabled) {
@@ -56,25 +63,46 @@ export function GameBoard({
     function handleKeyDown(e: KeyboardEvent) {
       if (disabled) return;
 
+      // Only handle Enter and Backspace globally
       if (e.key === "Enter") {
         e.preventDefault();
         onSubmit();
       } else if (e.key === "Backspace") {
         e.preventDefault();
         onBackspace();
-      } else if (e.key.length === 1 && /^[a-zA-ZāčēģīķļņšūžĀČĒĢĪĶĻŅŠŪŽ]$/.test(e.key)) {
-        e.preventDefault();
-        onKeyPress(e.key.toLowerCase());
       }
     }
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onKeyPress, onSubmit, onBackspace, disabled]);
+  }, [onSubmit, onBackspace, disabled]);
+
+  const processInput = (input: HTMLInputElement) => {
+    const value = input.value;
+    if (value.length > 0) {
+      // Process all characters in the input
+      for (const char of value) {
+        if (/^[a-zA-ZāčēģīķļņšūžĀČĒĢĪĶĻŅŠŪŽ]$/.test(char)) {
+          onKeyPress(char.toLowerCase());
+        }
+      }
+      input.value = "";
+    }
+  };
+
+  const handleFocus = () => {
+    if (!disabled) {
+      inputRef.current?.focus();
+    }
+  };
 
   return (
-    <div className="game-board" onClick={() => !disabled && inputRef.current?.focus()}>
-      {/* Hidden input for mobile keyboard */}
+    <div
+      className="game-board"
+      onClick={handleFocus}
+      onTouchStart={handleFocus}
+    >
+      {/* Hidden input for keyboard input including composed characters (e.g., Latvian diacritics) */}
       <input
         ref={inputRef}
         type="text"
@@ -82,13 +110,33 @@ export function GameBoard({
         autoCapitalize="off"
         autoComplete="off"
         autoCorrect="off"
-        value=""
+        spellCheck={false}
+        enterKeyHint="done"
+        inputMode="text"
         disabled={disabled}
-        onChange={(e) => {
+        onCompositionStart={() => {
+          isComposingRef.current = true;
+        }}
+        onCompositionEnd={(e) => {
+          isComposingRef.current = false;
+          const input = e.target as HTMLInputElement;
+          processInput(input);
+        }}
+        onInput={(e) => {
           if (disabled) return;
-          const char = e.target.value.slice(-1);
-          if (/^[a-zA-ZāčēģīķļņšūžĀČĒĢĪĶĻŅŠŪŽ]$/.test(char)) {
-            onKeyPress(char.toLowerCase());
+          // Don't process during composition (dead keys)
+          if (isComposingRef.current) return;
+          const input = e.target as HTMLInputElement;
+          processInput(input);
+        }}
+        onKeyDown={(e) => {
+          if (disabled) return;
+          if (e.key === "Enter") {
+            e.preventDefault();
+            onSubmit();
+          } else if (e.key === "Backspace") {
+            e.preventDefault();
+            onBackspace();
           }
         }}
       />
@@ -126,6 +174,23 @@ export function GameBoard({
             </div>
           );
         })}
+
+        {/* Answer row - shown when game is over and player lost */}
+        {gameOver && !won && targetWord && (
+          <div className="board-row answer-row">
+            {targetWord.split("").map((letter, colIndex) => (
+              <Tile
+                key={colIndex}
+                letter={letter}
+                state="correct"
+                isActive={false}
+                isRevealed={true}
+                delay={colIndex * 100}
+                index={colIndex}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

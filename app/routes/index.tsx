@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { PixelIcon } from "~/components/PixelIcon";
 
 export const Route = createFileRoute("/")({
   component: Home,
@@ -12,7 +13,9 @@ function Home() {
 
       <div className="mode-selection">
         <Link to="/solo" className="win95-button mode-button">
-          <span className="button-icon">🎮</span>
+          <span className="button-icon">
+            <PixelIcon name="gamepad" size={32} />
+          </span>
           <span className="button-text">
             <strong>Solo Arcade</strong>
             <small>Klasiskais režīms</small>
@@ -20,7 +23,9 @@ function Home() {
         </Link>
 
         <Link to="/ranked" className="win95-button mode-button">
-          <span className="button-icon">⚔️</span>
+          <span className="button-icon">
+            <PixelIcon name="swords" size={32} />
+          </span>
           <span className="button-text">
             <strong>Ranžēts režīms</strong>
             <small>Spēlē pret citiem</small>

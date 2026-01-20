@@ -7,6 +7,7 @@ import { Timer } from "~/components/Timer";
 import { TurnIndicator } from "~/components/TurnIndicator";
 import { OpponentInfo } from "~/components/OpponentInfo";
 import { MatchOverModal } from "~/components/MatchOverModal";
+import { RoundOverModal } from "~/components/RoundOverModal";
 
 export const Route = createFileRoute("/ranked/match/$matchId")({
   component: MatchGame,
@@ -29,6 +30,7 @@ function MatchGame() {
     forfeitMatch,
     rowAnimation,
     lastTypedIndex,
+    roundOverInfo,
   } = useMultiplayer(matchId);
 
   const handlePlayAgain = () => {
@@ -93,6 +95,9 @@ function MatchGame() {
           rowAnimation={rowAnimation}
           disabled={!state.isMyTurn || state.matchOver}
           lastTypedIndex={lastTypedIndex}
+          gameOver={!!roundOverInfo || state.matchOver}
+          won={roundOverInfo?.roundWinner === "me"}
+          targetWord={roundOverInfo?.word}
         />
 
         {!state.isMyTurn && !state.matchOver && (
@@ -117,6 +122,15 @@ function MatchGame() {
           opponentName={state.opponentName}
           onPlayAgain={handlePlayAgain}
           onExit={handleExit}
+        />
+      )}
+
+      {roundOverInfo && !state.matchOver && (
+        <RoundOverModal
+          word={roundOverInfo.word}
+          roundWinner={roundOverInfo.roundWinner}
+          winnerName={roundOverInfo.roundWinner === "me" ? playerName : state.opponentName}
+          roundNumber={roundOverInfo.roundNumber}
         />
       )}
     </div>

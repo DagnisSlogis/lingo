@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { PixelIcon } from "./PixelIcon";
 
 interface GameOverModalProps {
   won: boolean;
@@ -43,7 +44,7 @@ export function GameOverModal({
         </div>
         <div className="window-body modal-body">
           <div className="game-over-icon">
-            {isGameOver ? "💔" : won ? "🎉" : "😔"}
+            <PixelIcon name={isGameOver ? "heart-broken" : won ? "party" : "sad"} size={48} />
           </div>
 
           {isGameOver ? (
@@ -86,7 +87,7 @@ export function GameOverModal({
               <p className="final-word">
                 Vārds bija: <strong>{targetWord.toUpperCase()}</strong>
               </p>
-              <p className="hearts-lost">-1 ❤️</p>
+              <p className="hearts-lost">-1 <PixelIcon name="heart" size={16} /></p>
             </>
           )}
 

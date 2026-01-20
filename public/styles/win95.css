@@ -39,15 +39,25 @@ body {
   font-size: 14px;
   background: var(--win95-bg);
   color: var(--win95-black);
+  /* Prevent overscroll bounce on iOS */
+  overscroll-behavior: none;
+  /* Prevent pull-to-refresh on mobile */
+  touch-action: manipulation;
 }
 
 /* Desktop */
 .desktop {
   min-height: 100vh;
+  min-height: 100dvh; /* Dynamic viewport height for mobile browsers */
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
+  /* Safe area insets for notched phones */
+  padding-top: max(20px, env(safe-area-inset-top));
+  padding-bottom: max(20px, env(safe-area-inset-bottom));
+  padding-left: max(20px, env(safe-area-inset-left));
+  padding-right: max(20px, env(safe-area-inset-right));
   background: var(--win95-bg);
 }
 
@@ -361,8 +371,16 @@ body {
 
 .hidden-input {
   position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
   opacity: 0;
   pointer-events: none;
+  /* Prevent iOS zoom on focus */
+  font-size: 16px;
+  /* Prevent iOS from scrolling to input */
+  transform: translateY(-100%);
 }
 
 .board-grid {
@@ -492,6 +510,32 @@ body {
   }
   80% {
     transform: translateY(-2px);
+  }
+}
+
+/* Answer row - revealed when game is lost */
+.board-row.answer-row {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 2px solid var(--win95-dark-gray);
+}
+
+.board-row.answer-row .tile {
+  animation: answerReveal 0.5s ease-out forwards;
+  animation-delay: calc(var(--tile-index, 0) * 100ms);
+}
+
+@keyframes answerReveal {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
   }
 }
 
@@ -1206,6 +1250,91 @@ body {
   gap: 10px;
 }
 
+/* Round Over Modal */
+.round-over-modal {
+  max-width: 320px;
+  animation: modalPop 0.3s ease-out;
+}
+
+@keyframes modalPop {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.round-result-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: bold;
+  margin: 0 auto 15px;
+  border: 3px solid;
+}
+
+.round-result-icon.me {
+  background: #aaffaa;
+  border-color: #228822;
+  color: #228822;
+}
+
+.round-result-icon.opponent {
+  background: #ffaaaa;
+  border-color: #882222;
+  color: #882222;
+}
+
+.round-result-icon.draw {
+  background: #ffffaa;
+  border-color: #888822;
+  color: #888822;
+}
+
+.round-result-message {
+  text-align: center;
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.word-reveal {
+  background: var(--win95-white);
+  border: 2px solid;
+  border-color: var(--win95-dark-gray) var(--win95-light-gray)
+    var(--win95-light-gray) var(--win95-dark-gray);
+  padding: 15px;
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.word-reveal-label {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.word-reveal-word {
+  font-size: 28px;
+  font-weight: bold;
+  letter-spacing: 4px;
+  color: #000080;
+}
+
+.next-round-text {
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+  font-style: italic;
+}
+
 /* Loading Screen */
 .loading-screen {
   display: flex;
@@ -1223,12 +1352,63 @@ body {
   font-weight: bold;
 }
 
-/* Responsive */
+/* Responsive Design */
+
+/* Tablet and smaller desktops */
+@media (max-width: 768px) {
+  .desktop {
+    padding: 10px;
+    padding-top: max(10px, env(safe-area-inset-top));
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+    padding-left: max(10px, env(safe-area-inset-left));
+    padding-right: max(10px, env(safe-area-inset-right));
+  }
+
+  .win95-window {
+    max-width: 100%;
+  }
+
+  .game-title {
+    font-size: 40px;
+  }
+
+  .home-screen,
+  .difficulty-screen,
+  .ranked-screen {
+    padding: 20px 15px;
+  }
+
+  .mode-selection {
+    max-width: 280px;
+  }
+}
+
+/* Mobile phones */
 @media (max-width: 500px) {
+  .desktop {
+    padding: 5px;
+    padding-top: max(5px, env(safe-area-inset-top));
+    padding-bottom: max(5px, env(safe-area-inset-bottom));
+    padding-left: max(5px, env(safe-area-inset-left));
+    padding-right: max(5px, env(safe-area-inset-right));
+    align-items: flex-start;
+  }
+
+  .win95-window {
+    max-width: 100%;
+    border-width: 1px;
+  }
+
+  .window-content {
+    padding: 8px;
+    min-height: auto;
+  }
+
+  /* Tiles - responsive sizing using clamp */
   .tile {
-    width: 35px;
-    height: 35px;
-    font-size: 18px;
+    width: clamp(32px, 12vw, 45px);
+    height: clamp(32px, 12vw, 45px);
+    font-size: clamp(16px, 5vw, 24px);
   }
 
   .board-grid {
@@ -1240,12 +1420,42 @@ body {
     gap: 4px;
   }
 
+  /* Home screen */
   .game-title {
-    font-size: 36px;
+    font-size: clamp(28px, 10vw, 48px);
+    margin-bottom: 5px;
+  }
+
+  .subtitle {
+    font-size: 14px;
+    margin-bottom: 25px;
+  }
+
+  .home-screen {
+    padding: 20px 10px;
+  }
+
+  .mode-selection {
+    max-width: 100%;
+    gap: 10px;
   }
 
   .mode-button {
     padding: 12px 15px;
+    gap: 10px;
+  }
+
+  .button-icon {
+    font-size: 20px;
+  }
+
+  .button-text strong {
+    font-size: 14px;
+  }
+
+  /* Difficulty screen */
+  .difficulty-screen {
+    padding: 20px 10px;
   }
 
   .difficulty-tabs {
@@ -1254,9 +1464,67 @@ body {
 
   .tab-button {
     font-size: 12px;
+    padding: 10px;
+  }
+
+  /* Game header */
+  .game-header {
+    padding: 6px;
+    margin-bottom: 10px;
+  }
+
+  .hearts-display {
+    font-size: 16px;
+    gap: 3px;
+  }
+
+  .score-display {
+    font-size: 14px;
+  }
+
+  /* Solo game */
+  .solo-game {
+    padding: 5px;
+  }
+
+  /* Menu bar - touch friendly */
+  .menu-button {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+
+  .menu-dropdown {
+    min-width: 180px;
+  }
+
+  .menu-dropdown-item {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+
+  /* Buttons - touch friendly (min 44px tap target) */
+  .win95-button {
+    padding: 10px 16px;
+    font-size: 14px;
+    min-height: 44px;
+  }
+
+  .difficulty-button {
+    padding: 12px 15px;
+    min-height: 44px;
   }
 
   /* Multiplayer responsive */
+  .match-header {
+    padding: 6px;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .match-round {
+    font-size: 12px;
+  }
+
   .match-players-row {
     flex-direction: column;
     gap: 5px;
@@ -1265,10 +1533,24 @@ body {
   .my-info,
   .opponent-info {
     flex: none;
+    padding: 8px;
+  }
+
+  .my-name,
+  .opponent-name {
+    font-size: 12px;
   }
 
   .turn-indicator {
     padding: 8px 15px;
+  }
+
+  .turn-label {
+    font-size: 10px;
+  }
+
+  .turn-name {
+    font-size: 12px;
   }
 
   .match-players {
@@ -1285,11 +1567,282 @@ body {
     padding: 15px;
   }
 
+  .player-avatar {
+    font-size: 28px;
+  }
+
   .timer {
     padding: 3px 10px;
   }
 
   .timer-value {
     font-size: 14px;
+  }
+
+  /* Modals - full width on mobile */
+  .modal-overlay {
+    padding: 10px;
+    align-items: flex-start;
+    padding-top: 20px;
+  }
+
+  .modal {
+    max-width: 100%;
+    max-height: 90vh;
+  }
+
+  .modal-body {
+    padding: 12px;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .modal-actions .win95-button {
+    width: 100%;
+  }
+
+  .about-modal,
+  .game-over-modal,
+  .match-over-modal,
+  .round-over-modal {
+    max-width: 100%;
+  }
+
+  .game-over-icon,
+  .match-result-icon,
+  .about-icon {
+    font-size: 36px;
+  }
+
+  .round-result-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 26px;
+  }
+
+  .word-reveal-word {
+    font-size: 22px;
+    letter-spacing: 2px;
+  }
+
+  /* Leaderboard */
+  .leaderboard-table {
+    font-size: 12px;
+  }
+
+  .leaderboard-table th,
+  .leaderboard-table td {
+    padding: 6px 4px;
+  }
+
+  /* Matchmaking/Pre-match screens */
+  .matchmaking-screen,
+  .pre-match-screen {
+    padding: 20px 10px;
+    min-height: auto;
+  }
+
+  .matchmaking-title,
+  .pre-match-title {
+    font-size: 20px;
+  }
+
+  .searching-box {
+    padding: 20px;
+  }
+
+  .searching-animation {
+    font-size: 28px;
+  }
+
+  .searching-text {
+    font-size: 14px;
+  }
+
+  /* Ranked info */
+  .ranked-info {
+    padding: 12px;
+  }
+
+  .info-item {
+    gap: 8px;
+  }
+
+  .info-icon {
+    font-size: 16px;
+  }
+
+  .info-text {
+    font-size: 12px;
+  }
+}
+
+/* Very small phones (iPhone SE, etc.) */
+@media (max-width: 375px) {
+  .desktop {
+    padding: 3px;
+  }
+
+  .tile {
+    width: clamp(28px, 14vw, 35px);
+    height: clamp(28px, 14vw, 35px);
+    font-size: clamp(14px, 4.5vw, 18px);
+  }
+
+  .board-grid {
+    gap: 3px;
+    padding: 8px;
+  }
+
+  .board-row {
+    gap: 3px;
+  }
+
+  .game-title {
+    font-size: 24px;
+  }
+
+  .subtitle {
+    font-size: 12px;
+    margin-bottom: 20px;
+  }
+
+  .title-bar-text {
+    font-size: 11px;
+  }
+
+  .menu-button {
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+
+  .window-content {
+    padding: 5px;
+  }
+
+  .game-header {
+    padding: 5px;
+  }
+
+  .hearts-display {
+    font-size: 14px;
+  }
+
+  .score-display {
+    font-size: 12px;
+  }
+
+  .modal-body {
+    padding: 10px;
+  }
+
+  .word-reveal-word {
+    font-size: 18px;
+    letter-spacing: 1px;
+  }
+}
+
+/* Landscape mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+  .desktop {
+    padding: 5px;
+    align-items: flex-start;
+  }
+
+  .window-content {
+    min-height: auto;
+  }
+
+  .home-screen,
+  .difficulty-screen,
+  .ranked-screen {
+    padding: 15px 10px;
+  }
+
+  .game-title {
+    font-size: 28px;
+    margin-bottom: 5px;
+  }
+
+  .subtitle {
+    margin-bottom: 15px;
+  }
+
+  .mode-selection {
+    gap: 8px;
+  }
+
+  .modal-overlay {
+    padding: 5px;
+    align-items: center;
+  }
+
+  .modal {
+    max-height: 95vh;
+  }
+
+  .matchmaking-screen,
+  .pre-match-screen {
+    min-height: auto;
+    padding: 15px;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  /* Ensure all interactive elements have minimum tap target */
+  .win95-button,
+  .menu-button,
+  .menu-dropdown-item,
+  .tab-button,
+  .mode-button,
+  .difficulty-button {
+    min-height: 44px;
+  }
+
+  /* Remove hover states that don't work well on touch */
+  .leaderboard-table tr:hover td {
+    background: inherit;
+    color: inherit;
+  }
+
+  /* Better active states for touch feedback */
+  .win95-button:active,
+  .menu-button:active,
+  .mode-button:active {
+    transform: scale(0.98);
+  }
+
+  /* Ensure game board is easily tappable */
+  .game-board {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Prevent text selection on interactive elements */
+  .win95-button,
+  .menu-button,
+  .tile {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+}
+
+/* High contrast / accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .tile,
+  .tile.revealed,
+  .tile.pop,
+  .board-row.shake,
+  .board-row.bounce,
+  .round-over-modal,
+  .searching-animation .dot {
+    animation: none;
+  }
+
+  .tile {
+    transition: none;
   }
 }

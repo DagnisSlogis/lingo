@@ -8,41 +8,87 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-// Import Routes
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as IndexRouteImport } from './routes/index'
+import { Route as SoloIndexRouteImport } from './routes/solo/index'
+import { Route as RankedIndexRouteImport } from './routes/ranked/index'
+import { Route as SoloDifficultyRouteImport } from './routes/solo/$difficulty'
+import { Route as RankedMatchMatchIdRouteImport } from './routes/ranked/match.$matchId'
 
-import { Route as rootRoute } from './routes/__root'
-import { Route as IndexImport } from './routes/index'
-import { Route as SoloIndexImport } from './routes/solo/index'
-import { Route as RankedIndexImport } from './routes/ranked/index'
-import { Route as SoloDifficultyImport } from './routes/solo/$difficulty'
-
-// Create/Update Routes
-
-const IndexRoute = IndexImport.update({
+const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const SoloIndexRoute = SoloIndexImport.update({
+const SoloIndexRoute = SoloIndexRouteImport.update({
   id: '/solo/',
   path: '/solo/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const RankedIndexRoute = RankedIndexImport.update({
+const RankedIndexRoute = RankedIndexRouteImport.update({
   id: '/ranked/',
   path: '/ranked/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
-
-const SoloDifficultyRoute = SoloDifficultyImport.update({
+const SoloDifficultyRoute = SoloDifficultyRouteImport.update({
   id: '/solo/$difficulty',
   path: '/solo/$difficulty',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RankedMatchMatchIdRoute = RankedMatchMatchIdRouteImport.update({
+  id: '/ranked/match/$matchId',
+  path: '/ranked/match/$matchId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
-// Populate the FileRoutesByPath interface
+export interface FileRoutesByFullPath {
+  '/': typeof IndexRoute
+  '/solo/$difficulty': typeof SoloDifficultyRoute
+  '/ranked/': typeof RankedIndexRoute
+  '/solo/': typeof SoloIndexRoute
+  '/ranked/match/$matchId': typeof RankedMatchMatchIdRoute
+}
+export interface FileRoutesByTo {
+  '/': typeof IndexRoute
+  '/solo/$difficulty': typeof SoloDifficultyRoute
+  '/ranked': typeof RankedIndexRoute
+  '/solo': typeof SoloIndexRoute
+  '/ranked/match/$matchId': typeof RankedMatchMatchIdRoute
+}
+export interface FileRoutesById {
+  __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
+  '/solo/$difficulty': typeof SoloDifficultyRoute
+  '/ranked/': typeof RankedIndexRoute
+  '/solo/': typeof SoloIndexRoute
+  '/ranked/match/$matchId': typeof RankedMatchMatchIdRoute
+}
+export interface FileRouteTypes {
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths:
+    | '/'
+    | '/solo/$difficulty'
+    | '/ranked/'
+    | '/solo/'
+    | '/ranked/match/$matchId'
+  fileRoutesByTo: FileRoutesByTo
+  to: '/' | '/solo/$difficulty' | '/ranked' | '/solo' | '/ranked/match/$matchId'
+  id:
+    | '__root__'
+    | '/'
+    | '/solo/$difficulty'
+    | '/ranked/'
+    | '/solo/'
+    | '/ranked/match/$matchId'
+  fileRoutesById: FileRoutesById
+}
+export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
+  SoloDifficultyRoute: typeof SoloDifficultyRoute
+  RankedIndexRoute: typeof RankedIndexRoute
+  SoloIndexRoute: typeof SoloIndexRoute
+  RankedMatchMatchIdRoute: typeof RankedMatchMatchIdRoute
+}
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
@@ -50,80 +96,47 @@ declare module '@tanstack/react-router' {
       id: '/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/ranked/': {
-      id: '/ranked/'
-      path: '/ranked'
-      fullPath: '/ranked'
-      preLoaderRoute: typeof RankedIndexImport
-      parentRoute: typeof rootRoute
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/solo/': {
       id: '/solo/'
       path: '/solo'
-      fullPath: '/solo'
-      preLoaderRoute: typeof SoloIndexImport
-      parentRoute: typeof rootRoute
+      fullPath: '/solo/'
+      preLoaderRoute: typeof SoloIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ranked/': {
+      id: '/ranked/'
+      path: '/ranked'
+      fullPath: '/ranked/'
+      preLoaderRoute: typeof RankedIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/solo/$difficulty': {
       id: '/solo/$difficulty'
       path: '/solo/$difficulty'
       fullPath: '/solo/$difficulty'
-      preLoaderRoute: typeof SoloDifficultyImport
-      parentRoute: typeof rootRoute
+      preLoaderRoute: typeof SoloDifficultyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ranked/match/$matchId': {
+      id: '/ranked/match/$matchId'
+      path: '/ranked/match/$matchId'
+      fullPath: '/ranked/match/$matchId'
+      preLoaderRoute: typeof RankedMatchMatchIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
 
-// Create and export the route tree
-
-export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/ranked': typeof RankedIndexRoute
-  '/solo': typeof SoloIndexRoute
-  '/solo/$difficulty': typeof SoloDifficultyRoute
-}
-
-export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/ranked': typeof RankedIndexRoute
-  '/solo': typeof SoloIndexRoute
-  '/solo/$difficulty': typeof SoloDifficultyRoute
-}
-
-export interface FileRoutesById {
-  __root__: typeof rootRoute
-  '/': typeof IndexRoute
-  '/ranked/': typeof RankedIndexRoute
-  '/solo/': typeof SoloIndexRoute
-  '/solo/$difficulty': typeof SoloDifficultyRoute
-}
-
-export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/ranked' | '/solo' | '/solo/$difficulty'
-  fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/ranked' | '/solo' | '/solo/$difficulty'
-  id: '__root__' | '/' | '/ranked/' | '/solo/' | '/solo/$difficulty'
-  fileRoutesById: FileRoutesById
-}
-
-export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  RankedIndexRoute: typeof RankedIndexRoute
-  SoloIndexRoute: typeof SoloIndexRoute
-  SoloDifficultyRoute: typeof SoloDifficultyRoute
-}
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  SoloDifficultyRoute: SoloDifficultyRoute,
   RankedIndexRoute: RankedIndexRoute,
   SoloIndexRoute: SoloIndexRoute,
-  SoloDifficultyRoute: SoloDifficultyRoute,
+  RankedMatchMatchIdRoute: RankedMatchMatchIdRoute,
 }
-
-export const routeTree = rootRoute
+export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()

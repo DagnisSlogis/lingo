@@ -1,3 +1,5 @@
+import { PixelIcon } from "./PixelIcon";
+
 interface OpponentInfoProps {
   name: string;
   rating: number;
@@ -19,10 +21,10 @@ export function OpponentInfo({ name, rating, hearts, score }: OpponentInfoProps)
         </div>
         <div className="opponent-stat">
           <span className="stat-label">Dzīvības:</span>
-          <span className="stat-value">
+          <span className="stat-value opponent-hearts">
             {Array.from({ length: 3 }).map((_, i) => (
               <span key={i} className={i < hearts ? "heart-full" : "heart-empty"}>
-                {i < hearts ? "❤️" : "🖤"}
+                <PixelIcon name={i < hearts ? "heart" : "heart-empty"} size={16} />
               </span>
             ))}
           </span>

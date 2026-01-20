@@ -8,7 +8,8 @@ export default defineSchema({
     difficulty: v.string(), // "easy" | "medium" | "hard"
   })
     .index("by_difficulty", ["difficulty"])
-    .index("by_length", ["length"]),
+    .index("by_length", ["length"])
+    .index("by_difficulty_word", ["difficulty", "word"]),
 
   leaderboard: defineTable({
     playerId: v.string(),

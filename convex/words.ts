@@ -1,7 +1,7 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 
-export const getRandomWord = query({
+export const getRandomWord = mutation({
   args: {
     difficulty: v.string(),
   },
@@ -43,11 +43,12 @@ export const addWord = mutation({
     const word = args.word.toLowerCase().trim();
     const length = word.length;
 
-    // Check if word already exists
+    // Check if word already exists using compound index
     const existing = await ctx.db
       .query("words")
-      .withIndex("by_difficulty", (q) => q.eq("difficulty", args.difficulty))
-      .filter((q) => q.eq(q.field("word"), word))
+      .withIndex("by_difficulty_word", (q) =>
+        q.eq("difficulty", args.difficulty).eq("word", word)
+      )
       .first();
 
     if (existing) {
@@ -78,11 +79,12 @@ export const seedWords = mutation({
       const cleanWord = word.toLowerCase().trim();
       const length = cleanWord.length;
 
-      // Check if word already exists
+      // Check if word already exists using compound index
       const existing = await ctx.db
         .query("words")
-        .withIndex("by_difficulty", (q) => q.eq("difficulty", difficulty))
-        .filter((q) => q.eq(q.field("word"), cleanWord))
+        .withIndex("by_difficulty_word", (q) =>
+          q.eq("difficulty", difficulty).eq("word", cleanWord)
+        )
         .first();
 
       if (!existing) {

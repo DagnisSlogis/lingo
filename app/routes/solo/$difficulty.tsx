@@ -52,6 +52,9 @@ function SoloGame() {
         rowAnimation={rowAnimation}
         disabled={gameOver}
         lastTypedIndex={lastTypedIndex}
+        gameOver={gameOver}
+        won={won}
+        targetWord={targetWord}
       />
 
       <div className="game-controls">

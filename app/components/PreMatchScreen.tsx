@@ -1,3 +1,5 @@
+import { PixelIcon } from "./PixelIcon";
+
 interface PreMatchScreenProps {
   myName: string;
   myRating: number;
@@ -20,7 +22,9 @@ export function PreMatchScreen({
 
         <div className="match-players">
           <div className="match-player">
-            <div className="player-avatar">👤</div>
+            <div className="player-avatar">
+              <PixelIcon name="person" size={48} />
+            </div>
             <div className="player-name">{myName}</div>
             <div className="player-rating">{myRating} pts</div>
           </div>
@@ -28,7 +32,9 @@ export function PreMatchScreen({
           <div className="vs-divider">VS</div>
 
           <div className="match-player opponent">
-            <div className="player-avatar">👤</div>
+            <div className="player-avatar">
+              <PixelIcon name="person" size={48} />
+            </div>
             <div className="player-name">{opponentName}</div>
             <div className="player-rating">{opponentRating} pts</div>
           </div>

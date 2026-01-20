@@ -1,3 +1,5 @@
+import { PixelIcon } from "./PixelIcon";
+
 interface AboutModalProps {
   onClose: () => void;
 }
@@ -19,7 +21,9 @@ export function AboutModal({ onClose }: AboutModalProps) {
           </div>
         </div>
         <div className="window-body modal-body about-body">
-          <div className="about-icon">🎯</div>
+          <div className="about-icon">
+            <PixelIcon name="target" size={48} />
+          </div>
           <h2>Lingo</h2>
           <p className="version">Versija 1.0</p>
 
@@ -34,7 +38,7 @@ export function AboutModal({ onClose }: AboutModalProps) {
 
           <div className="about-credits">
             <p>© 2024</p>
-            <p>Izstrādāts ar ❤️ Latvijā</p>
+            <p>Izstrādāts ar <PixelIcon name="heart" size={16} /> Latvijā</p>
           </div>
 
           <div className="modal-actions">

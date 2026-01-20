@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from "react";
-import { useQuery, useMutation } from "convex/react";
+import { useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import type { BoardRow, RowAnimation } from "~/components/GameBoard";
 import type { TileState } from "~/components/Tile";
@@ -28,7 +28,7 @@ function createEmptyBoard(wordLength: number): BoardRow[] {
 
 export function useGame(difficulty: Difficulty) {
   const wordLength = WORD_LENGTHS[difficulty];
-  const randomWord = useQuery(api.words.getRandomWord, { difficulty });
+  const getRandomWord = useMutation(api.words.getRandomWord);
   const submitScore = useMutation(api.leaderboard.submitScore);
   const { play: playSound } = useSound();
 
@@ -63,21 +63,25 @@ export function useGame(difficulty: Difficulty) {
     return generatePlayerName();
   });
 
-  // Initialize target word when it loads
+  // Fetch a new word when targetWord is empty
   useEffect(() => {
-    if (randomWord && !targetWord) {
-      setTargetWord(randomWord.word);
-      // Set first letter as revealed
-      setBoard((prev) => {
-        const newBoard = [...prev];
-        newBoard[0] = {
-          ...newBoard[0],
-          letters: [randomWord.word[0], ...Array(wordLength - 1).fill("")],
-        };
-        return newBoard;
+    if (!targetWord) {
+      getRandomWord({ difficulty }).then((result) => {
+        if (result) {
+          setTargetWord(result.word);
+          // Set first letter as revealed
+          setBoard((prev) => {
+            const newBoard = [...prev];
+            newBoard[0] = {
+              ...newBoard[0],
+              letters: [result.word[0], ...Array(wordLength - 1).fill("")],
+            };
+            return newBoard;
+          });
+        }
       });
     }
-  }, [randomWord, targetWord, wordLength]);
+  }, [targetWord, difficulty, wordLength, getRandomWord]);
 
   const handleKeyPress = useCallback(
     (key: string) => {
