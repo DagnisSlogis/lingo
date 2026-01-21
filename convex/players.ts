@@ -310,6 +310,32 @@ export const updateLastDifficulty = mutation({
   },
 });
 
+// Reset player solo stats (keeps ranked stats intact)
+export const resetPlayerSoloStats = mutation({
+  args: {
+    playerId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const player = await ctx.db
+      .query("players")
+      .withIndex("by_player_id", (q) => q.eq("playerId", args.playerId))
+      .first();
+
+    if (!player) {
+      return { success: false, error: "Player not found" };
+    }
+
+    await ctx.db.patch(player._id, {
+      totalGamesPlayed: 0,
+      totalWins: 0,
+      dailyStreak: 0,
+      longestStreak: 0,
+    });
+
+    return { success: true };
+  },
+});
+
 // Get player streak info
 export const getPlayerStreak = query({
   args: {

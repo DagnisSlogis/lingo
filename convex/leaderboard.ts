@@ -89,3 +89,22 @@ export const clearAllLeaderboard = mutation({
     return { deleted: allEntries.length };
   },
 });
+
+// Clear a specific player's leaderboard stats
+export const clearPlayerStats = mutation({
+  args: {
+    playerId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const entries = await ctx.db
+      .query("leaderboard")
+      .withIndex("by_player", (q) => q.eq("playerId", args.playerId))
+      .collect();
+
+    for (const entry of entries) {
+      await ctx.db.delete(entry._id);
+    }
+
+    return { deleted: entries.length };
+  },
+});

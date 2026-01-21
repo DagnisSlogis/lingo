@@ -203,7 +203,7 @@ export function useGame(difficulty: Difficulty) {
         playerName,
         score,
         difficulty,
-        gamesWon: Math.floor(score / 10), // Rough estimate
+        gamesWon: 1,
       });
     } catch (error) {
       console.error("Failed to submit score:", error);
