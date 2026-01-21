@@ -148,16 +148,28 @@ const soundFunctions: Record<SoundType, () => void> = {
   opponentGuess: playOpponentGuess,
 };
 
-export function useSound() {
-  const [enabled, setEnabled] = useState(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("lingo_sound_enabled");
-      return stored !== "false";
-    }
-    return true;
-  });
+// Shared state across all useSound instances
+let globalSoundEnabled = typeof window !== "undefined"
+  ? localStorage.getItem("lingo_sound_enabled") !== "false"
+  : true;
 
+const SOUND_TOGGLE_EVENT = "lingo-sound-toggle";
+
+export function useSound() {
+  const [enabled, setEnabled] = useState(globalSoundEnabled);
   const initialized = useRef(false);
+
+  // Listen for sound toggle events from other instances
+  useEffect(() => {
+    const handleSoundToggle = (e: CustomEvent<boolean>) => {
+      setEnabled(e.detail);
+    };
+
+    window.addEventListener(SOUND_TOGGLE_EVENT, handleSoundToggle as EventListener);
+    return () => {
+      window.removeEventListener(SOUND_TOGGLE_EVENT, handleSoundToggle as EventListener);
+    };
+  }, []);
 
   // Initialize audio context on first user interaction
   useEffect(() => {
@@ -191,13 +203,16 @@ export function useSound() {
   }, [enabled]);
 
   const toggle = useCallback(() => {
-    setEnabled((prev) => {
-      const newValue = !prev;
-      if (typeof window !== "undefined") {
-        localStorage.setItem("lingo_sound_enabled", String(newValue));
-      }
-      return newValue;
-    });
+    const newValue = !globalSoundEnabled;
+    globalSoundEnabled = newValue;
+
+    if (typeof window !== "undefined") {
+      localStorage.setItem("lingo_sound_enabled", String(newValue));
+      // Notify all other useSound instances
+      window.dispatchEvent(new CustomEvent(SOUND_TOGGLE_EVENT, { detail: newValue }));
+    }
+
+    setEnabled(newValue);
   }, []);
 
   return {

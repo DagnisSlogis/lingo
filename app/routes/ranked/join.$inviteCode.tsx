@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
@@ -10,7 +10,6 @@ export const Route = createFileRoute("/ranked/join/$inviteCode")({
 
 function JoinInviteScreen() {
   const { inviteCode } = Route.useParams();
-  const navigate = useNavigate();
   const { play: playSound } = useSound();
 
   const [playerId] = useState(() => {
@@ -57,7 +56,9 @@ function JoinInviteScreen() {
         const matchIdStr = String(result.matchId);
         console.log("[JoinInvite] navigating to match:", matchIdStr, "type:", typeof result.matchId);
         playSound("yourTurn");
-        navigate({ to: `/ranked/match/${matchIdStr}` });
+        // Use window.location for reliable navigation (Tanstack Router can be flaky)
+        window.location.href = `/ranked/match/${matchIdStr}`;
+        return;
       } else {
         setError(result.error || "Neizdevās pievienoties");
         playSound("wrong");

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { LeaderboardModal } from "./LeaderboardModal";
 import { AboutModal } from "./AboutModal";
@@ -10,13 +10,6 @@ export function MenuBar() {
   const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
   const [showStats, setShowStats] = useState(false);
-  const [animationsEnabled, setAnimationsEnabled] = useState(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("lingo_animations_enabled");
-      return stored !== "false";
-    }
-    return true;
-  });
   const menuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { play: playSound, enabled: soundEnabled, toggle: toggleSound } = useSound();
@@ -37,28 +30,6 @@ export function MenuBar() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  // Apply animations class to body
-  useEffect(() => {
-    if (typeof document !== "undefined") {
-      if (animationsEnabled) {
-        document.body.classList.remove("animations-disabled");
-      } else {
-        document.body.classList.add("animations-disabled");
-      }
-    }
-  }, [animationsEnabled]);
-
-  const toggleAnimations = useCallback(() => {
-    playSound("menuClick");
-    setAnimationsEnabled((prev) => {
-      const newValue = !prev;
-      if (typeof window !== "undefined") {
-        localStorage.setItem("lingo_animations_enabled", String(newValue));
-      }
-      return newValue;
-    });
-  }, [playSound]);
 
   const handleMenuClick = (menu: string) => {
     playSound("menuClick");
@@ -144,13 +115,6 @@ export function MenuBar() {
               >
                 <span className={`menu-checkbox ${soundEnabled ? "checked" : ""}`}></span>
                 Skaņas
-              </button>
-              <button
-                className="menu-dropdown-item checkbox"
-                onClick={toggleAnimations}
-              >
-                <span className={`menu-checkbox ${animationsEnabled ? "checked" : ""}`}></span>
-                Animācijas
               </button>
               <div className="menu-separator" />
               <button className="menu-dropdown-item" onClick={handleStats}>

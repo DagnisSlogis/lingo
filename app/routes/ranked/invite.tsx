@@ -60,9 +60,10 @@ function InviteScreen() {
       const matchIdStr = String(invite.matchId);
       console.log("[InviteScreen] matched! navigating to match:", matchIdStr);
       playSound("yourTurn");
-      navigate({ to: `/ranked/match/${matchIdStr}` });
+      // Use window.location for reliable navigation (Tanstack Router can be flaky)
+      window.location.href = `/ranked/match/${matchIdStr}`;
     }
-  }, [invite, inviteCode, navigate, playSound]);
+  }, [invite, inviteCode, playSound]);
 
   // Cancel invite on unmount
   useEffect(() => {

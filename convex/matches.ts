@@ -578,6 +578,41 @@ export const cancelRematch = mutation({
   },
 });
 
+// Leave match (player exits after match is finished)
+export const leaveMatch = mutation({
+  args: {
+    matchId: v.id("matches"),
+    playerId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const match = await ctx.db.get(args.matchId);
+
+    if (!match) {
+      return { success: false, error: "Match not found" };
+    }
+
+    if (match.status !== "finished") {
+      return { success: false, error: "Match is not finished" };
+    }
+
+    const isPlayer1 = match.player1Id === args.playerId;
+    const isPlayer2 = match.player2Id === args.playerId;
+
+    if (!isPlayer1 && !isPlayer2) {
+      return { success: false, error: "Not a player in this match" };
+    }
+
+    // Mark player as having left
+    if (isPlayer1) {
+      await ctx.db.patch(args.matchId, { player1Left: true });
+    } else {
+      await ctx.db.patch(args.matchId, { player2Left: true });
+    }
+
+    return { success: true };
+  },
+});
+
 // Update typing status (for live typing indicator)
 export const updateTypingStatus = mutation({
   args: {

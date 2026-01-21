@@ -8,8 +8,9 @@ interface MatchOverModalProps {
   opponentName: string;
   onPlayAgain: () => void;
   onExit: () => void;
+  onFindNewMatch?: () => void;
   // Rematch state
-  rematchState?: "idle" | "waiting" | "opponent_waiting" | "starting";
+  rematchState?: "idle" | "waiting" | "opponent_waiting" | "starting" | "opponent_left";
   onCancelRematch?: () => void;
 }
 
@@ -21,6 +22,7 @@ export function MatchOverModal({
   opponentName,
   onPlayAgain,
   onExit,
+  onFindNewMatch,
   rematchState = "idle",
   onCancelRematch,
 }: MatchOverModalProps) {
@@ -32,12 +34,15 @@ export function MatchOverModal({
         return "Pieņemt revanšu!";
       case "starting":
         return "Sākas...";
+      case "opponent_left":
+        return "Meklēt jaunu pretinieku";
       default:
         return "Spēlēt vēlreiz";
     }
   };
 
   const isRematchDisabled = rematchState === "waiting" || rematchState === "starting";
+  const showFindNewMatch = rematchState === "opponent_left";
 
   return (
     <div className="modal-overlay">
@@ -49,7 +54,9 @@ export function MatchOverModal({
         </div>
         <div className="window-body">
           <div className="match-result-icon">
-            <PixelIcon name={isWinner ? "trophy" : "sad"} size={48} />
+            {isWinner && (
+              <img src="/img/trophy.svg" alt="duel" width={48} height={48} />
+            )}
           </div>
 
           <div className="match-result-title">
@@ -73,6 +80,12 @@ export function MatchOverModal({
             </div>
           )}
 
+          {rematchState === "opponent_left" && (
+            <div className="rematch-notice opponent-left">
+              {opponentName} aizgāja
+            </div>
+          )}
+
           {rematchState === "waiting" && (
             <div className="rematch-waiting">
               <span className="waiting-dots">...</span>
@@ -80,13 +93,22 @@ export function MatchOverModal({
           )}
 
           <div className="modal-buttons">
-            <button
-              className={`win95-button ${rematchState === "opponent_waiting" ? "rematch-accept" : ""}`}
-              onClick={onPlayAgain}
-              disabled={isRematchDisabled}
-            >
-              {getRematchButtonText()}
-            </button>
+            {showFindNewMatch ? (
+              <button
+                className="win95-button"
+                onClick={onFindNewMatch}
+              >
+                {getRematchButtonText()}
+              </button>
+            ) : (
+              <button
+                className={`win95-button ${rematchState === "opponent_waiting" ? "rematch-accept" : ""}`}
+                onClick={onPlayAgain}
+                disabled={isRematchDisabled}
+              >
+                {getRematchButtonText()}
+              </button>
+            )}
             {rematchState === "waiting" && onCancelRematch ? (
               <button className="win95-button" onClick={onCancelRematch}>
                 Atcelt

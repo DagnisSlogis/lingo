@@ -70,6 +70,9 @@ export default defineSchema({
     player2CurrentGuess: v.optional(v.string()),
     // Timer sync - timestamp when current turn started
     turnStartedAt: v.optional(v.number()),
+    // Track if player left the match (for rematch flow)
+    player1Left: v.optional(v.boolean()),
+    player2Left: v.optional(v.boolean()),
   })
     .index("by_status", ["status"])
     .index("by_player", ["player1Id"])

@@ -42,14 +42,17 @@ function MatchGame() {
 
   const requestRematchMutation = useMutation(api.matches.requestRematch);
   const cancelRematchMutation = useMutation(api.matches.cancelRematch);
+  const leaveMatchMutation = useMutation(api.matches.leaveMatch);
 
   // Determine rematch state from match data
   const isPlayer1 = match?.player1Id === playerId;
   const myRematchWant = isPlayer1 ? match?.player1WantsRematch : match?.player2WantsRematch;
   const opponentRematchWant = isPlayer1 ? match?.player2WantsRematch : match?.player1WantsRematch;
+  const opponentLeft = isPlayer1 ? match?.player2Left : match?.player1Left;
 
-  const getRematchState = (): "idle" | "waiting" | "opponent_waiting" | "starting" => {
+  const getRematchState = (): "idle" | "waiting" | "opponent_waiting" | "starting" | "opponent_left" => {
     if (match?.rematchMatchId) return "starting";
+    if (opponentLeft) return "opponent_left";
     if (myRematchWant && opponentRematchWant) return "starting";
     if (myRematchWant) return "waiting";
     if (opponentRematchWant) return "opponent_waiting";
@@ -102,8 +105,28 @@ function MatchGame() {
     }
   };
 
-  const handleExit = () => {
+  const handleExit = async () => {
+    // Mark player as having left the match
+    if (matchId && playerId && state.matchOver) {
+      try {
+        await leaveMatchMutation({ matchId, playerId });
+      } catch (error) {
+        console.error("Failed to mark as left:", error);
+      }
+    }
     window.location.href = "/";
+  };
+
+  const handleFindNewMatch = async () => {
+    // Mark player as having left the match, then navigate to matchmaking
+    if (matchId && playerId) {
+      try {
+        await leaveMatchMutation({ matchId, playerId });
+      } catch (error) {
+        console.error("Failed to mark as left:", error);
+      }
+    }
+    navigate({ to: "/ranked" });
   };
 
   const handleForfeit = () => {
@@ -183,6 +206,7 @@ function MatchGame() {
           opponentName={state.opponentName}
           onPlayAgain={handlePlayAgain}
           onExit={handleExit}
+          onFindNewMatch={handleFindNewMatch}
           rematchState={rematchState}
           onCancelRematch={handleCancelRematch}
         />

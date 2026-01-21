@@ -17,11 +17,6 @@ export function MatchmakingScreen({ playerName, queueCount, onCancel }: Matchmak
             <span className="dot">.</span>
           </div>
           <div className="searching-text">Meklē pretinieku...</div>
-          <div className="queue-info">
-            {queueCount > 0 && (
-              <span>Rindā gaida: {queueCount} spēlētāj{queueCount === 1 ? "s" : "i"}</span>
-            )}
-          </div>
         </div>
 
         <button className="win95-button cancel-button" onClick={onCancel}>
