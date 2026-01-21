@@ -26,10 +26,6 @@ export function GameOverModal({
           </div>
         </div>
         <div className="window-body modal-body">
-          <div className="game-over-icon">
-            <PixelIcon name={isGameOver ? "heart-broken" : won ? "party" : "sad"} size={48} />
-          </div>
-
           {isGameOver ? (
             <>
               <h2>Spēle beigusies!</h2>
@@ -47,7 +43,7 @@ export function GameOverModal({
           ) : won ? (
             <>
               <h2>Apsveicam!</h2>
-              <p>Tu uzminēji vārdu!</p>
+              <p style={{ textAlign: "center" }}>Tu uzminēji vārdu!</p>
               <p className="score-gained">
                 +{getScoreForAttempt(6 - getCurrentRowFromScore(score))} punkti
               </p>
