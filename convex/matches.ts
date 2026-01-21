@@ -309,6 +309,7 @@ export const submitGuess = mutation({
 });
 
 // Skip turn (called when timer expires)
+// Timer running out = empty guess + player loses a heart
 export const skipTurn = mutation({
   args: {
     matchId: v.id("matches"),
@@ -334,38 +335,33 @@ export const skipTurn = mutation({
     const emptyTileStates = new Array(wordLength).fill("absent");
     const newGuessResults = [...(match.guessResults || []), emptyTileStates];
 
+    // Timer running out costs the player a heart
+    const newPlayer1Hearts = isPlayer1
+      ? match.player1Hearts - 1
+      : match.player1Hearts;
+    const newPlayer2Hearts = isPlayer1
+      ? match.player2Hearts
+      : match.player2Hearts - 1;
+
+    // Check if match is over (player who timed out lost their last heart)
+    if (newPlayer1Hearts <= 0 || newPlayer2Hearts <= 0) {
+      const winnerId = newPlayer1Hearts <= 0 ? match.player2Id : match.player1Id;
+
+      await ctx.db.patch(args.matchId, {
+        guesses: newGuesses,
+        guessResults: newGuessResults,
+        player1Hearts: newPlayer1Hearts,
+        player2Hearts: newPlayer2Hearts,
+        status: "finished",
+        winnerId,
+        updatedAt: Date.now(),
+      });
+
+      return { success: true, matchOver: true, winnerId, timedOut: true };
+    }
+
+    // If 6 guesses reached, start new round (hearts already deducted above)
     if (newGuesses.length >= 6) {
-      // Both lose a heart
-      const newPlayer1Hearts = match.player1Hearts - 1;
-      const newPlayer2Hearts = match.player2Hearts - 1;
-
-      if (newPlayer1Hearts <= 0 || newPlayer2Hearts <= 0) {
-        let winnerId: string | undefined;
-        if (newPlayer1Hearts <= 0 && newPlayer2Hearts <= 0) {
-          winnerId =
-            match.player1Score >= match.player2Score
-              ? match.player1Id
-              : match.player2Id;
-        } else if (newPlayer1Hearts <= 0) {
-          winnerId = match.player2Id;
-        } else {
-          winnerId = match.player1Id;
-        }
-
-        await ctx.db.patch(args.matchId, {
-          guesses: newGuesses,
-          guessResults: newGuessResults,
-          player1Hearts: newPlayer1Hearts,
-          player2Hearts: newPlayer2Hearts,
-          status: "finished",
-          winnerId,
-          updatedAt: Date.now(),
-        });
-
-        return { success: true, matchOver: true, winnerId };
-      }
-
-      // New round
       const difficulties = ["easy", "medium", "hard"];
       const randomDifficulty =
         difficulties[Math.floor(Math.random() * difficulties.length)];
@@ -396,18 +392,20 @@ export const skipTurn = mutation({
         updatedAt: Date.now(),
       });
 
-      return { success: true, newRound: true };
+      return { success: true, newRound: true, timedOut: true };
     }
 
-    // Just switch turns
+    // Continue game - switch turns (heart already deducted)
     await ctx.db.patch(args.matchId, {
       guesses: newGuesses,
       guessResults: newGuessResults,
+      player1Hearts: newPlayer1Hearts,
+      player2Hearts: newPlayer2Hearts,
       currentTurn: opponentId,
       updatedAt: Date.now(),
     });
 
-    return { success: true };
+    return { success: true, timedOut: true };
   },
 });
 
