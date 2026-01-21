@@ -16,7 +16,7 @@ function SoloDifficultySelect() {
           className="win95-button difficulty-button"
         >
           <strong>Viegls</strong>
-          <small>5 burti</small>
+          <small>4 burti</small>
         </Link>
 
         <Link
@@ -24,8 +24,8 @@ function SoloDifficultySelect() {
           params={{ difficulty: "medium" }}
           className="win95-button difficulty-button"
         >
-          <strong>Vidējs</strong>
-          <small>7 burti</small>
+          <strong>Klasiskais</strong>
+          <small>5 burti</small>
         </Link>
 
         <Link
@@ -34,7 +34,7 @@ function SoloDifficultySelect() {
           className="win95-button difficulty-button"
         >
           <strong>Grūts</strong>
-          <small>9 burti</small>
+          <small>6 burti</small>
         </Link>
       </div>
 

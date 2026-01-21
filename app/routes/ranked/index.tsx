@@ -82,6 +82,10 @@ function RankedQueue() {
           Meklēt pretinieku
         </button>
 
+        <Link to="/ranked/invite" className="win95-button start-button">
+          Uzaicināt draugu
+        </Link>
+
         <Link to="/" className="win95-button back-button">
           ← Atpakaļ
         </Link>

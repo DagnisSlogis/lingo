@@ -136,3 +136,142 @@ export const getPlayerRankedStats = query({
     };
   },
 });
+
+// Helper function to get start of day in UTC
+function getUtcDayStart(timestamp: number): number {
+  const date = new Date(timestamp);
+  date.setUTCHours(0, 0, 0, 0);
+  return date.getTime();
+}
+
+// Record a game win and update streak
+export const recordGameWin = mutation({
+  args: {
+    playerId: v.string(),
+    playerName: v.string(),
+    difficulty: v.string(),
+  },
+  handler: async (ctx, args) => {
+    let player = await ctx.db
+      .query("players")
+      .withIndex("by_player_id", (q) => q.eq("playerId", args.playerId))
+      .first();
+
+    const now = Date.now();
+    const todayStart = getUtcDayStart(now);
+
+    if (!player) {
+      // Create new player with initial streak
+      const id = await ctx.db.insert("players", {
+        playerId: args.playerId,
+        name: args.playerName,
+        rankedRating: 1000,
+        rankedWins: 0,
+        rankedLosses: 0,
+        createdAt: now,
+        dailyStreak: 1,
+        lastPlayedAt: now,
+        longestStreak: 1,
+        totalGamesPlayed: 1,
+        totalWins: 1,
+        lastDifficulty: args.difficulty,
+      });
+      return await ctx.db.get(id);
+    }
+
+    const lastPlayedDayStart = player.lastPlayedAt
+      ? getUtcDayStart(player.lastPlayedAt)
+      : 0;
+
+    let newStreak = player.dailyStreak ?? 0;
+    const yesterdayStart = todayStart - 24 * 60 * 60 * 1000;
+
+    // Calculate streak
+    if (lastPlayedDayStart === todayStart) {
+      // Already played today - streak stays the same
+    } else if (lastPlayedDayStart === yesterdayStart) {
+      // Played yesterday - increment streak
+      newStreak++;
+    } else {
+      // Missed a day - reset streak to 1
+      newStreak = 1;
+    }
+
+    const newLongestStreak = Math.max(player.longestStreak ?? 0, newStreak);
+
+    await ctx.db.patch(player._id, {
+      dailyStreak: newStreak,
+      lastPlayedAt: now,
+      longestStreak: newLongestStreak,
+      totalGamesPlayed: (player.totalGamesPlayed ?? 0) + 1,
+      totalWins: (player.totalWins ?? 0) + 1,
+      lastDifficulty: args.difficulty,
+    });
+
+    return await ctx.db.get(player._id);
+  },
+});
+
+// Update last played difficulty (for quick play)
+export const updateLastDifficulty = mutation({
+  args: {
+    playerId: v.string(),
+    difficulty: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const player = await ctx.db
+      .query("players")
+      .withIndex("by_player_id", (q) => q.eq("playerId", args.playerId))
+      .first();
+
+    if (player) {
+      await ctx.db.patch(player._id, {
+        lastDifficulty: args.difficulty,
+      });
+    }
+
+    return { success: true };
+  },
+});
+
+// Get player streak info
+export const getPlayerStreak = query({
+  args: {
+    playerId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const player = await ctx.db
+      .query("players")
+      .withIndex("by_player_id", (q) => q.eq("playerId", args.playerId))
+      .first();
+
+    if (!player) {
+      return {
+        dailyStreak: 0,
+        longestStreak: 0,
+        lastDifficulty: null,
+      };
+    }
+
+    // Check if streak is still valid
+    const now = Date.now();
+    const todayStart = getUtcDayStart(now);
+    const lastPlayedDayStart = player.lastPlayedAt
+      ? getUtcDayStart(player.lastPlayedAt)
+      : 0;
+    const yesterdayStart = todayStart - 24 * 60 * 60 * 1000;
+
+    let currentStreak = player.dailyStreak ?? 0;
+
+    // If last played was before yesterday, streak is broken
+    if (lastPlayedDayStart < yesterdayStart) {
+      currentStreak = 0;
+    }
+
+    return {
+      dailyStreak: currentStreak,
+      longestStreak: player.longestStreak ?? 0,
+      lastDifficulty: player.lastDifficulty ?? null,
+    };
+  },
+});

@@ -75,3 +75,17 @@ export const getPlayerStats = query({
     return entries;
   },
 });
+
+// Clear all leaderboard data (for migration to new difficulties)
+export const clearAllLeaderboard = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const allEntries = await ctx.db.query("leaderboard").collect();
+
+    for (const entry of allEntries) {
+      await ctx.db.delete(entry._id);
+    }
+
+    return { deleted: allEntries.length };
+  },
+});

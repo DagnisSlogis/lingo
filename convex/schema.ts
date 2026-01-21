@@ -29,6 +29,14 @@ export default defineSchema({
     rankedWins: v.number(),
     rankedLosses: v.number(),
     createdAt: v.number(),
+    // Streak and engagement fields
+    dailyStreak: v.optional(v.number()),
+    lastPlayedAt: v.optional(v.number()),
+    longestStreak: v.optional(v.number()),
+    totalGamesPlayed: v.optional(v.number()),
+    totalWins: v.optional(v.number()),
+    // Quick play - remembers last difficulty
+    lastDifficulty: v.optional(v.string()),
   }).index("by_player_id", ["playerId"]),
 
   matches: defineTable({
@@ -60,4 +68,17 @@ export default defineSchema({
   })
     .index("by_status", ["status"])
     .index("by_player", ["playerId"]),
+
+  invites: defineTable({
+    inviteCode: v.string(),      // 5 digits (e.g., "48271")
+    hostPlayerId: v.string(),
+    hostPlayerName: v.string(),
+    status: v.string(),          // "waiting" | "matched" | "cancelled"
+    matchId: v.optional(v.id("matches")),
+    difficulty: v.string(),      // Host chooses difficulty
+    createdAt: v.number(),
+  })
+    .index("by_code", ["inviteCode"])
+    .index("by_host", ["hostPlayerId"])
+    .index("by_status", ["status"]),
 });

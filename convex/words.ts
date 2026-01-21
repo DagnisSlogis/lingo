@@ -13,10 +13,11 @@ export const getRandomWord = mutation({
 
     if (words.length === 0) {
       // Return fallback words if database is empty
+      // New word lengths: easy=4, medium=5, hard=6
       const fallbackWords: Record<string, string[]> = {
-        easy: ["māja", "suns", "kaķis", "ziema", "vasara"],
-        medium: ["brīvība", "lauksaimn", "dzīvoklis"],
-        hard: ["universitāte", "matemātika", "bibliotēka"],
+        easy: ["māja", "suns", "zeme", "sula", "pļava"],
+        medium: ["vārds", "spēle", "laiks", "diena", "nakts"],
+        hard: ["ziemas", "vasara", "grāmata", "draugs"],
       };
 
       const fallback = fallbackWords[args.difficulty] || fallbackWords.easy;
@@ -125,5 +126,19 @@ export const getWordCount = query({
       hard: hard.length,
       total: easy.length + medium.length + hard.length,
     };
+  },
+});
+
+// Clear all words (for migration to new difficulty lengths)
+export const clearAllWords = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const allWords = await ctx.db.query("words").collect();
+
+    for (const word of allWords) {
+      await ctx.db.delete(word._id);
+    }
+
+    return { deleted: allWords.length };
   },
 });

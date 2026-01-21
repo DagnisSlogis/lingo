@@ -13,7 +13,9 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as SoloIndexRouteImport } from './routes/solo/index'
 import { Route as RankedIndexRouteImport } from './routes/ranked/index'
 import { Route as SoloDifficultyRouteImport } from './routes/solo/$difficulty'
+import { Route as RankedInviteRouteImport } from './routes/ranked/invite'
 import { Route as RankedMatchMatchIdRouteImport } from './routes/ranked/match.$matchId'
+import { Route as RankedJoinInviteCodeRouteImport } from './routes/ranked/join.$inviteCode'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -35,58 +37,87 @@ const SoloDifficultyRoute = SoloDifficultyRouteImport.update({
   path: '/solo/$difficulty',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RankedInviteRoute = RankedInviteRouteImport.update({
+  id: '/ranked/invite',
+  path: '/ranked/invite',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RankedMatchMatchIdRoute = RankedMatchMatchIdRouteImport.update({
   id: '/ranked/match/$matchId',
   path: '/ranked/match/$matchId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RankedJoinInviteCodeRoute = RankedJoinInviteCodeRouteImport.update({
+  id: '/ranked/join/$inviteCode',
+  path: '/ranked/join/$inviteCode',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/ranked/invite': typeof RankedInviteRoute
   '/solo/$difficulty': typeof SoloDifficultyRoute
   '/ranked/': typeof RankedIndexRoute
   '/solo/': typeof SoloIndexRoute
+  '/ranked/join/$inviteCode': typeof RankedJoinInviteCodeRoute
   '/ranked/match/$matchId': typeof RankedMatchMatchIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/ranked/invite': typeof RankedInviteRoute
   '/solo/$difficulty': typeof SoloDifficultyRoute
   '/ranked': typeof RankedIndexRoute
   '/solo': typeof SoloIndexRoute
+  '/ranked/join/$inviteCode': typeof RankedJoinInviteCodeRoute
   '/ranked/match/$matchId': typeof RankedMatchMatchIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/ranked/invite': typeof RankedInviteRoute
   '/solo/$difficulty': typeof SoloDifficultyRoute
   '/ranked/': typeof RankedIndexRoute
   '/solo/': typeof SoloIndexRoute
+  '/ranked/join/$inviteCode': typeof RankedJoinInviteCodeRoute
   '/ranked/match/$matchId': typeof RankedMatchMatchIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/ranked/invite'
     | '/solo/$difficulty'
     | '/ranked/'
     | '/solo/'
+    | '/ranked/join/$inviteCode'
     | '/ranked/match/$matchId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/solo/$difficulty' | '/ranked' | '/solo' | '/ranked/match/$matchId'
+  to:
+    | '/'
+    | '/ranked/invite'
+    | '/solo/$difficulty'
+    | '/ranked'
+    | '/solo'
+    | '/ranked/join/$inviteCode'
+    | '/ranked/match/$matchId'
   id:
     | '__root__'
     | '/'
+    | '/ranked/invite'
     | '/solo/$difficulty'
     | '/ranked/'
     | '/solo/'
+    | '/ranked/join/$inviteCode'
     | '/ranked/match/$matchId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  RankedInviteRoute: typeof RankedInviteRoute
   SoloDifficultyRoute: typeof SoloDifficultyRoute
   RankedIndexRoute: typeof RankedIndexRoute
   SoloIndexRoute: typeof SoloIndexRoute
+  RankedJoinInviteCodeRoute: typeof RankedJoinInviteCodeRoute
   RankedMatchMatchIdRoute: typeof RankedMatchMatchIdRoute
 }
 
@@ -120,6 +151,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SoloDifficultyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ranked/invite': {
+      id: '/ranked/invite'
+      path: '/ranked/invite'
+      fullPath: '/ranked/invite'
+      preLoaderRoute: typeof RankedInviteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/ranked/match/$matchId': {
       id: '/ranked/match/$matchId'
       path: '/ranked/match/$matchId'
@@ -127,14 +165,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RankedMatchMatchIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ranked/join/$inviteCode': {
+      id: '/ranked/join/$inviteCode'
+      path: '/ranked/join/$inviteCode'
+      fullPath: '/ranked/join/$inviteCode'
+      preLoaderRoute: typeof RankedJoinInviteCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  RankedInviteRoute: RankedInviteRoute,
   SoloDifficultyRoute: SoloDifficultyRoute,
   RankedIndexRoute: RankedIndexRoute,
   SoloIndexRoute: SoloIndexRoute,
+  RankedJoinInviteCodeRoute: RankedJoinInviteCodeRoute,
   RankedMatchMatchIdRoute: RankedMatchMatchIdRoute,
 }
 export const routeTree = rootRouteImport

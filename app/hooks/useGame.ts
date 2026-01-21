@@ -10,9 +10,9 @@ import { useSound } from "./useSound";
 type Difficulty = "easy" | "medium" | "hard";
 
 const WORD_LENGTHS: Record<Difficulty, number> = {
-  easy: 5,
-  medium: 7,
-  hard: 9,
+  easy: 4,
+  medium: 5,
+  hard: 6,
 };
 
 const MAX_ROWS = 6;
@@ -30,6 +30,7 @@ export function useGame(difficulty: Difficulty) {
   const wordLength = WORD_LENGTHS[difficulty];
   const getRandomWord = useMutation(api.words.getRandomWord);
   const submitScore = useMutation(api.leaderboard.submitScore);
+  const recordGameWin = useMutation(api.players.recordGameWin);
   const { play: playSound } = useSound();
 
   const [targetWord, setTargetWord] = useState<string>("");
@@ -151,6 +152,12 @@ export function useGame(difficulty: Difficulty) {
       // Bounce animation and win sound
       triggerRowAnimation(currentRow, "bounce");
       playSound("win");
+      // Record win for streak tracking
+      recordGameWin({
+        playerId,
+        playerName,
+        difficulty,
+      }).catch((err) => console.error("Failed to record win:", err));
     } else if (currentRow >= MAX_ROWS - 1) {
       // Lost this round - shake animation
       triggerRowAnimation(currentRow, "shake");

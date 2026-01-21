@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as invites from "../invites.js";
 import type * as leaderboard from "../leaderboard.js";
 import type * as matches from "../matches.js";
 import type * as matchmaking from "../matchmaking.js";
@@ -22,6 +23,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  invites: typeof invites;
   leaderboard: typeof leaderboard;
   matches: typeof matches;
   matchmaking: typeof matchmaking;
