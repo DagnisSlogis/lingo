@@ -24,21 +24,22 @@ export function AboutModal({ onClose }: AboutModalProps) {
           <div className="about-icon">
             <img src="/img/netatirgus.svg" alt="Lingo" className="about-logo" />
           </div>
-          <h2>Lingo</h2>
+          <h2>NetaTirgus Lingo</h2>
           <p className="version">Versija 1.0</p>
 
           <div className="about-description">
             <p>
-              Latviešu vārdu minēšanas spēle, kas balstīta uz klasisko TV šovu "Lingo".
+              Visiem zināmā Tildes Lingo spēlē, lai uzjundīto nostaļģiskas sajūtas :)
             </p>
             <p>
-              Uzminiet vārdu 6 mēģinājumos. Zaļš = pareiza vieta, dzeltens = nepareiza vieta, pelēks = nav vārdā.
+              Spēlē klasisko versiju vai izaicini pretinieku uz Dueli.
+
             </p>
           </div>
 
           <div className="about-credits">
-            <p>© 2024</p>
-            <p>Izstrādāts ar <PixelIcon name="heart" size={16} /> Latvijā</p>
+            <p>© 2026</p>
+            <p>Izstrādājusi komanda no Netatirgus.lv</p>
           </div>
 
           <div className="modal-actions">

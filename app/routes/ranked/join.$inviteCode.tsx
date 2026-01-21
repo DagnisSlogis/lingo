@@ -91,7 +91,7 @@ function JoinInviteScreen() {
 
         <div className="invite-buttons">
           <Link to="/ranked" className="win95-button">
-            Ranžēts režīms
+            Duelis
           </Link>
           <Link to="/" className="win95-button back-button">
             ← Uz sākumu

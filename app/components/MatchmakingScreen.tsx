@@ -8,12 +8,8 @@ export function MatchmakingScreen({ playerName, queueCount, onCancel }: Matchmak
   return (
     <div className="matchmaking-screen">
       <div className="matchmaking-content">
-        <div className="matchmaking-title">Ranžēts režīms</div>
+        <div className="matchmaking-title">Duelis</div>
 
-        <div className="player-info-box">
-          <div className="player-label">Tu spēlē kā:</div>
-          <div className="player-name">{playerName}</div>
-        </div>
 
         <div className="searching-box">
           <div className="searching-animation">

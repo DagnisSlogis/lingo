@@ -57,7 +57,7 @@ export function StatsModal({ onClose, playerId }: StatsModalProps) {
               className={`win95-button tab-button ${activeTab === "ranked" ? "active" : ""}`}
               onClick={() => setActiveTab("ranked")}
             >
-              Ranžēts
+              Duelis
             </button>
             <button
               className={`win95-button tab-button ${activeTab === "global" ? "active" : ""}`}

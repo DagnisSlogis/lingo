@@ -7,8 +7,9 @@ export const Route = createFileRoute("/")({
 function Home() {
   return (
     <div className="home-screen">
-      <img src="/img/netatirgus.svg" alt="Lingo" className="game-logo" />
-      <p className="subtitle">Latviešu vārdu spēle</p>
+      <div>
+       <img src="/img/netatirgus.svg" alt="Lingo" className="game-logo" /><h1>Lingo</h1>
+      </div>
 
       <div className="mode-selection">
         <Link to="/solo" className="win95-button mode-button">
@@ -16,8 +17,8 @@ function Home() {
             <img src="/img/clasic.svg" alt="solo" className="mode-icon" />
           </span>
           <span className="button-text">
-            <strong>Solo Arcade</strong>
-            <small>Klasiskais režīms</small>
+            <strong>Solo</strong>
+            <small>Klasiskais Lingo</small>
           </span>
         </Link>
 
@@ -26,7 +27,7 @@ function Home() {
             <img src="/img/duel.svg" alt="ranked" className="mode-icon" />
           </span>
           <span className="button-text">
-            <strong>Ranžēts režīms</strong>
+            <strong>Duelis</strong>
             <small>Spēlē pret citiem</small>
           </span>
         </Link>

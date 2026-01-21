@@ -48,30 +48,19 @@ function RankedQueue() {
 
   return (
     <div className="ranked-screen">
-      <h2>Ranžēts režīms</h2>
+      <h2>Duelis</h2>
       <p className="description">
         Spēlē pret citiem spēlētājiem un cīnies par vietu līderu sarakstā!
       </p>
 
       <div className="ranked-info">
-        <div className="info-item">
-          <img src="/img/duel.svg" alt="duel" className="info-icon" />
-          <span className="info-text">Divi spēlētāji min vārdu uz vienas galdiņa</span>
-        </div>
-        <div className="info-item">
-          <span className="info-text">30 sekundes katram gājienam</span>
-        </div>
-        <div className="info-item">
-          <span className="info-text">3 dzīvības - pirmais, kas zaudē visas, zaudē maču</span>
-        </div>
-        <div className="info-item">
-          <span className="info-text">Uzvaras un zaudējumi ietekmē tavu reitingu</span>
-        </div>
-      </div>
-
-      <div className="player-box">
-        <div className="player-label">Tu spēlēsi kā:</div>
-        <div className="player-name">{playerName}</div>
+        <h3>Spēles noteikumi</h3>
+        <ul>
+          <li>Divi spēlētāji min vienu vārdu</li>
+          <li>Katrs gājiens ir 30 sekundes</li>
+          <li>3 dzīvības - pirmais, kas zaudē visas, zaudē maču</li>
+          <li>Uzvaras un zaudējumi ietekmē tavu reitingu</li>
+        </ul>
       </div>
 
       <div className="ranked-buttons">
@@ -80,7 +69,7 @@ function RankedQueue() {
         </button>
 
         <Link to="/ranked/invite" className="win95-button start-button">
-          Uzaicināt draugu
+          Spēlēt ar draugu
         </Link>
 
         <Link to="/" className="win95-button back-button">

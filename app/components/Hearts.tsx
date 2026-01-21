@@ -1,5 +1,3 @@
-import { PixelIcon } from "./PixelIcon";
-
 interface HeartsProps {
   hearts: number;
   maxHearts?: number;
@@ -13,7 +11,13 @@ export function Hearts({ hearts, maxHearts = 3 }: HeartsProps) {
           key={i}
           className={`heart ${i < hearts ? "full" : "empty"}`}
         >
-          <PixelIcon name={i < hearts ? "heart" : "heart-empty"} size={24} />
+          <img
+            src="/img/live.svg"
+            alt="life"
+            width={24}
+            height={24}
+            style={{ opacity: i < hearts ? 1 : 0.3 }}
+          />
         </span>
       ))}
     </div>

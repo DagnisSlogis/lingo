@@ -116,7 +116,7 @@ export function MenuBar() {
                 Jauna spēle
               </button>
               <button className="menu-dropdown-item" onClick={handleRankedMode}>
-                Ranžēts režīms
+                Duelis
               </button>
               <div className="menu-separator" />
               <button

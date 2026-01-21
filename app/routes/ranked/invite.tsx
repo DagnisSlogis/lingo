@@ -170,11 +170,6 @@ function InviteScreen() {
     <div className="invite-screen">
       <h2>Gaida draugu...</h2>
 
-      <div className="invite-code-box">
-        <div className="invite-code-label">Uzaicinājuma kods:</div>
-        <div className="invite-code">{inviteCode}</div>
-      </div>
-
       <div className="invite-link-box">
         {getInviteLink()}
       </div>
