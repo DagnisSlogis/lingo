@@ -144,6 +144,7 @@ export const joinInvite = mutation({
       currentDifficulty: invite.difficulty,
       currentRound: 1,
       currentTurn: hostGoesFirst ? invite.hostPlayerId : args.playerId,
+      turnStartedAt: Date.now(),
       guesses: [],
       guessResults: [],
       player1Hearts: 3,

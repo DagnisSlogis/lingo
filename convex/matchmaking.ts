@@ -64,6 +64,7 @@ export const joinQueue = mutation({
         currentDifficulty: randomDifficulty,
         currentRound: 1,
         currentTurn: player1GoesFirst ? player1Id : player2Id,
+        turnStartedAt: Date.now(),
         guesses: [],
         guessResults: [],
         player1Hearts: 3,

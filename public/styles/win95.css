@@ -1273,6 +1273,45 @@ body {
   font-size: 12px;
 }
 
+/* Opponent Typing Indicator */
+.opponent-typing {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--win95-dark-gray);
+}
+
+.typing-label {
+  font-size: 10px;
+  color: var(--win95-dark-gray);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.typing-tiles {
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+}
+
+.typing-tile {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: bold;
+  background: #606060;
+  border: 1px solid;
+  border-color: #808080 #404040 #404040 #808080;
+  color: transparent;
+}
+
+.typing-tile.has-letter {
+  background: #808080;
+  color: var(--win95-white);
+}
+
 /* Match Game Area */
 .match-game-area {
   position: relative;

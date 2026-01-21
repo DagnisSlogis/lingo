@@ -162,6 +162,8 @@ export const submitGuess = mutation({
           status: "finished",
           winnerId,
           updatedAt: Date.now(),
+          player1CurrentGuess: undefined,
+          player2CurrentGuess: undefined,
         });
 
         return {
@@ -199,11 +201,14 @@ export const submitGuess = mutation({
         currentDifficulty: randomDifficulty,
         currentRound: match.currentRound + 1,
         currentTurn: roundStarter,
+        turnStartedAt: Date.now(),
         player1Hearts: newPlayer1Hearts,
         player2Hearts: newPlayer2Hearts,
         player1Score: newPlayer1Score,
         player2Score: newPlayer2Score,
         updatedAt: Date.now(),
+        player1CurrentGuess: undefined,
+        player2CurrentGuess: undefined,
       });
 
       return {
@@ -243,6 +248,8 @@ export const submitGuess = mutation({
           status: "finished",
           winnerId,
           updatedAt: Date.now(),
+          player1CurrentGuess: undefined,
+          player2CurrentGuess: undefined,
         });
 
         return {
@@ -280,9 +287,12 @@ export const submitGuess = mutation({
         currentDifficulty: randomDifficulty,
         currentRound: match.currentRound + 1,
         currentTurn: roundStarter,
+        turnStartedAt: Date.now(),
         player1Hearts: newPlayer1Hearts,
         player2Hearts: newPlayer2Hearts,
         updatedAt: Date.now(),
+        player1CurrentGuess: undefined,
+        player2CurrentGuess: undefined,
       });
 
       return {
@@ -294,11 +304,15 @@ export const submitGuess = mutation({
     }
 
     // Continue game - switch turns
+    // Clear current player's typing since they just submitted
+    const clearTypingField = isPlayer1 ? "player1CurrentGuess" : "player2CurrentGuess";
     await ctx.db.patch(args.matchId, {
       guesses: newGuesses,
       guessResults: newGuessResults,
       currentTurn: opponentId,
+      turnStartedAt: Date.now(),
       updatedAt: Date.now(),
+      [clearTypingField]: undefined,
     });
 
     return {
@@ -355,6 +369,8 @@ export const skipTurn = mutation({
         status: "finished",
         winnerId,
         updatedAt: Date.now(),
+        player1CurrentGuess: undefined,
+        player2CurrentGuess: undefined,
       });
 
       return { success: true, matchOver: true, winnerId, timedOut: true };
@@ -387,22 +403,29 @@ export const skipTurn = mutation({
         currentDifficulty: randomDifficulty,
         currentRound: match.currentRound + 1,
         currentTurn: roundStarter,
+        turnStartedAt: Date.now(),
         player1Hearts: newPlayer1Hearts,
         player2Hearts: newPlayer2Hearts,
         updatedAt: Date.now(),
+        player1CurrentGuess: undefined,
+        player2CurrentGuess: undefined,
       });
 
       return { success: true, newRound: true, timedOut: true };
     }
 
     // Continue game - switch turns (heart already deducted)
+    // Clear current player's typing since their turn ended
+    const clearTypingField = isPlayer1 ? "player1CurrentGuess" : "player2CurrentGuess";
     await ctx.db.patch(args.matchId, {
       guesses: newGuesses,
       guessResults: newGuessResults,
       player1Hearts: newPlayer1Hearts,
       player2Hearts: newPlayer2Hearts,
       currentTurn: opponentId,
+      turnStartedAt: Date.now(),
       updatedAt: Date.now(),
+      [clearTypingField]: undefined,
     });
 
     return { success: true, timedOut: true };
@@ -504,6 +527,7 @@ export const requestRematch = mutation({
         currentDifficulty: match.currentDifficulty,
         currentRound: 1,
         currentTurn: hostGoesFirst ? match.player1Id : match.player2Id,
+        turnStartedAt: Date.now(),
         guesses: [],
         guessResults: [],
         player1Hearts: 3,
@@ -551,6 +575,25 @@ export const cancelRematch = mutation({
     }
 
     return { success: true };
+  },
+});
+
+// Update typing status (for live typing indicator)
+export const updateTypingStatus = mutation({
+  args: {
+    matchId: v.id("matches"),
+    playerId: v.string(),
+    currentGuess: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const match = await ctx.db.get(args.matchId);
+    if (!match || match.status !== "active") return;
+
+    const isPlayer1 = match.player1Id === args.playerId;
+
+    await ctx.db.patch(args.matchId, {
+      [isPlayer1 ? "player1CurrentGuess" : "player2CurrentGuess"]: args.currentGuess,
+    });
   },
 });
 

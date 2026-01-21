@@ -38,6 +38,7 @@ function MatchGame() {
     rowAnimation,
     lastTypedIndex,
     roundOverInfo,
+    opponentCurrentGuess,
   } = useMultiplayer(matchId);
 
   const [rematchRequested, setRematchRequested] = useState(false);
@@ -147,6 +148,8 @@ function MatchGame() {
           rating={state.opponentRating}
           hearts={state.opponentHearts}
           score={state.opponentScore}
+          currentGuess={opponentCurrentGuess}
+          wordLength={wordLength}
         />
       </div>
 

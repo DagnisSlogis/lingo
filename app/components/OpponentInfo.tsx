@@ -5,9 +5,32 @@ interface OpponentInfoProps {
   rating: number;
   hearts: number;
   score: number;
+  currentGuess?: string;
+  wordLength?: number;
 }
 
-export function OpponentInfo({ name, rating, hearts, score }: OpponentInfoProps) {
+export function OpponentInfo({ name, rating, hearts, score, currentGuess, wordLength }: OpponentInfoProps) {
+  // Create display tiles for opponent's typing
+  const renderTypingIndicator = () => {
+    if (!currentGuess || !wordLength) return null;
+
+    const letters = currentGuess.split("");
+    const tiles = Array.from({ length: wordLength }, (_, i) => letters[i] || "");
+
+    return (
+      <div className="opponent-typing">
+        <span className="typing-label">Raksta:</span>
+        <div className="typing-tiles">
+          {tiles.map((letter, i) => (
+            <span key={i} className={`typing-tile ${letter ? "has-letter" : ""}`}>
+              {letter.toUpperCase()}
+            </span>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="opponent-info">
       <div className="opponent-header">
@@ -34,6 +57,7 @@ export function OpponentInfo({ name, rating, hearts, score }: OpponentInfoProps)
           <span className="stat-value">{score}</span>
         </div>
       </div>
+      {renderTypingIndicator()}
     </div>
   );
 }

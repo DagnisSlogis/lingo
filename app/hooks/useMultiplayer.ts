@@ -55,6 +55,11 @@ interface Match {
   player1WantsRematch?: boolean;
   player2WantsRematch?: boolean;
   rematchMatchId?: string;
+  // Live typing
+  player1CurrentGuess?: string;
+  player2CurrentGuess?: string;
+  // Timer sync
+  turnStartedAt?: number;
 }
 
 interface Player {
@@ -133,6 +138,7 @@ export function useMultiplayer(matchId: string) {
   const forfeitMatchMutation = useMutation((api as any).matches?.forfeitMatch);
   const updateMatchRatingsMutation = useMutation((api as any).players?.updateMatchRatings);
   const clearMatchmakingMutation = useMutation((api as any).matchmaking?.clearMatchmaking);
+  const updateTypingStatusMutation = useMutation((api as any).matches?.updateTypingStatus);
 
   // Determine player position
   const isPlayer1 = match?.player1Id === playerId;
@@ -247,9 +253,10 @@ export function useMultiplayer(matchId: string) {
     skipTurnMutationRef.current = skipTurnMutation;
   }, [matchId, playerId, skipTurnMutation]);
 
-  // Timer management
+  // Timer management - synced across both players
   const currentTurn = match?.currentTurn;
   const matchStatus = match?.status;
+  const turnStartedAt = match?.turnStartedAt;
 
   useEffect(() => {
     if (!matchStatus || matchStatus !== "active") return;
@@ -262,34 +269,32 @@ export function useMultiplayer(matchId: string) {
     }
     previousTurnRef.current = currentTurn ?? null;
 
-    // Reset timer when it becomes your turn
-    if (isMyTurn) {
-      setTimeRemaining(TURN_TIME_LIMIT);
+    // Calculate remaining time from server timestamp
+    const calculateTimeRemaining = () => {
+      if (!turnStartedAt) return TURN_TIME_LIMIT;
+      const elapsed = Math.floor((Date.now() - turnStartedAt) / 1000);
+      return Math.max(0, TURN_TIME_LIMIT - elapsed);
+    };
 
-      timerRef.current = setInterval(() => {
-        setTimeRemaining((prev) => {
-          if (prev <= 1) {
-            // Time's up - skip turn
-            if (timerRef.current) clearInterval(timerRef.current);
-            if (skipTurnMutationRef.current) {
-              skipTurnMutationRef.current({
-                matchId: matchIdRef.current,
-                playerId: playerIdRef.current
-              });
-            }
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    } else {
-      // Not your turn - stop timer
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
+    // Set initial time based on server timestamp
+    setTimeRemaining(calculateTimeRemaining());
+
+    // Start interval to update timer every second
+    timerRef.current = setInterval(() => {
+      const remaining = calculateTimeRemaining();
+      setTimeRemaining(remaining);
+
+      // Only the active player triggers skip turn when time runs out
+      if (remaining <= 0 && isMyTurn) {
+        if (timerRef.current) clearInterval(timerRef.current);
+        if (skipTurnMutationRef.current) {
+          skipTurnMutationRef.current({
+            matchId: matchIdRef.current,
+            playerId: playerIdRef.current
+          });
+        }
       }
-      setTimeRemaining(TURN_TIME_LIMIT);
-    }
+    }, 1000);
 
     return () => {
       if (timerRef.current) {
@@ -297,7 +302,7 @@ export function useMultiplayer(matchId: string) {
         timerRef.current = null;
       }
     };
-  }, [currentTurn, matchStatus, playerId, playSound]);
+  }, [currentTurn, matchStatus, playerId, playSound, turnStartedAt]);
 
   // Track round transitions and show word reveal
   const matchCurrentRound = match?.currentRound;
@@ -384,6 +389,24 @@ export function useMultiplayer(matchId: string) {
     updateMatchRatingsMutation,
     clearMatchmakingMutation,
   ]);
+
+  // Sync typing status to server (debounced)
+  useEffect(() => {
+    if (!match || match.status !== "active" || !matchId) return;
+    if (match.currentTurn !== playerId) return; // Only sync when it's my turn
+
+    const timer = setTimeout(() => {
+      if (updateTypingStatusMutation) {
+        updateTypingStatusMutation({
+          matchId,
+          playerId,
+          currentGuess,
+        });
+      }
+    }, 150); // Debounce 150ms
+
+    return () => clearTimeout(timer);
+  }, [currentGuess, match?.status, match?.currentTurn, matchId, playerId, updateTypingStatusMutation]);
 
   const handleKeyPress = useCallback(
     (key: string) => {
@@ -476,6 +499,13 @@ export function useMultiplayer(matchId: string) {
     isWinner: match?.winnerId === playerId,
   };
 
+  // Get opponent's current guess
+  const opponentCurrentGuess = match
+    ? isPlayer1
+      ? match.player2CurrentGuess
+      : match.player1CurrentGuess
+    : undefined;
+
   return {
     playerId,
     playerName,
@@ -492,5 +522,6 @@ export function useMultiplayer(matchId: string) {
     rowAnimation,
     lastTypedIndex: lastTypedIndex.current,
     roundOverInfo,
+    opponentCurrentGuess,
   };
 }

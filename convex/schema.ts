@@ -65,6 +65,11 @@ export default defineSchema({
     rematchMatchId: v.optional(v.id("matches")),
     // Track if ratings have been updated (prevents duplicate updates)
     ratingsUpdated: v.optional(v.boolean()),
+    // Live typing - shows what opponent is currently typing
+    player1CurrentGuess: v.optional(v.string()),
+    player2CurrentGuess: v.optional(v.string()),
+    // Timer sync - timestamp when current turn started
+    turnStartedAt: v.optional(v.number()),
   })
     .index("by_status", ["status"])
     .index("by_player", ["player1Id"])
