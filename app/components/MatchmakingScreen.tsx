@@ -10,7 +10,6 @@ export function MatchmakingScreen({ playerName, queueCount, onCancel }: Matchmak
       <div className="matchmaking-content">
         <div className="matchmaking-title">Duelis</div>
 
-
         <div className="searching-box">
           <div className="searching-animation">
             <span className="dot">.</span>

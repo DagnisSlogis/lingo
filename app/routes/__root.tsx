@@ -10,7 +10,7 @@ export const Route = createRootRoute({
 function RootComponent() {
   return (
     <div className="desktop">
-      <Window title="NetaTigus Lingo">
+      <Window title="NetaTirgus Lingo">
         <MenuBar />
         <StatusBar />
         <div className="window-content">

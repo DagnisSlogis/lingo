@@ -84,6 +84,7 @@ body {
   padding-left: max(20px, env(safe-area-inset-left));
   padding-right: max(20px, env(safe-area-inset-right));
   background: var(--win95-bg);
+  box-sizing: border-box;
 }
 
 /* Window */
@@ -95,6 +96,8 @@ body {
   box-shadow: 1px 1px 0 var(--win95-black);
   width: 100%;
   max-width: 600px;
+  display: flex;
+  flex-direction: column;
 }
 
 .title-bar {
@@ -163,6 +166,9 @@ body {
 
 .window-body {
   padding: 0;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 .window-content {
@@ -171,6 +177,7 @@ body {
   min-height: 300px;
   display: flex;
   flex-direction: column;
+  flex: 1;
 }
 
 /* Menu Bar */
@@ -321,12 +328,35 @@ body {
   white-space: nowrap;
 }
 
+.status-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  vertical-align: middle;
+}
+
+/* Home Header - Logo and Title */
+.home-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 25px;
+}
+
+.game-logo {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+}
+
 .game-title {
   font-size: 48px;
   font-weight: bold;
   color: var(--win95-title-blue);
   text-shadow: 1px 1px 0 var(--win95-light-gray);
-  margin-bottom: 5px;
+  margin: 0;
 }
 
 .subtitle {
@@ -369,10 +399,21 @@ body {
   color: var(--win95-dark-gray);
 }
 
+.mode-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
 /* Difficulty Selection */
 .difficulty-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   padding: 30px 20px;
+  flex: 1;
 }
 
 .difficulty-screen h2 {
@@ -407,6 +448,9 @@ body {
 /* Solo Game */
 .solo-game {
   padding: 8px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .game-header {
@@ -796,8 +840,13 @@ body {
 }
 
 .about-icon {
-  font-size: 48px;
   margin-bottom: 10px;
+}
+
+.about-logo {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
 }
 
 .about-body h2 {
@@ -816,6 +865,11 @@ body {
 
 .about-description p {
   margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.about-description p:last-child {
+  margin-bottom: 0;
 }
 
 .about-credits {
@@ -881,8 +935,13 @@ body {
 
 /* Ranked Screen */
 .ranked-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   padding: 30px 20px;
+  flex: 1;
 }
 
 .ranked-screen h2 {
@@ -910,6 +969,28 @@ body {
   padding: 15px;
   margin-bottom: 20px;
   text-align: left;
+}
+
+.ranked-info h3 {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  color: var(--win95-black);
+}
+
+.ranked-info ul {
+  margin: 0;
+  padding-left: 20px;
+  list-style-type: square;
+}
+
+.ranked-info ul li {
+  margin-bottom: 6px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.ranked-info ul li:last-child {
+  margin-bottom: 0;
 }
 
 .info-item {
@@ -971,7 +1052,7 @@ body {
   align-items: center;
   justify-content: center;
   padding: 30px 20px;
-  min-height: 400px;
+  flex: 1;
 }
 
 .matchmaking-content {
@@ -1050,7 +1131,7 @@ body {
   align-items: center;
   justify-content: center;
   padding: 30px 20px;
-  min-height: 400px;
+  flex: 1;
 }
 
 .pre-match-content {
@@ -1112,6 +1193,9 @@ body {
 /* Match Screen */
 .match-screen {
   padding: 10px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .match-header {
@@ -1524,7 +1608,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 400px;
+  flex: 1;
 }
 
 .loading-text {
@@ -1577,12 +1661,16 @@ body {
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
     align-items: stretch;
+    min-height: 100vh;
+    min-height: 100dvh;
   }
 
   .win95-window {
     max-width: 100%;
     border-width: 2px;
     box-shadow: 1px 1px 0 var(--win95-black);
+    min-height: 100vh;
+    min-height: 100dvh;
   }
 
   /* Keep Win95 title bar look on mobile */
@@ -1628,9 +1716,18 @@ body {
   }
 
   /* Home screen */
+  .home-header {
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .game-logo {
+    width: 48px;
+    height: 48px;
+  }
+
   .game-title {
     font-size: clamp(28px, 10vw, 48px);
-    margin-bottom: 5px;
   }
 
   .subtitle {
@@ -1643,6 +1740,11 @@ body {
     justify-content: center;
   }
 
+  .mode-icon {
+    width: 24px;
+    height: 24px;
+  }
+
   /* Status bar mobile */
   .status-bar {
     gap: 2px;
@@ -1653,6 +1755,11 @@ body {
     font-size: 10px;
     padding: 1px 4px;
     gap: 2px;
+  }
+
+  .status-icon {
+    width: 14px;
+    height: 14px;
   }
 
   .mode-selection {
@@ -1886,7 +1993,12 @@ body {
   .matchmaking-screen,
   .pre-match-screen {
     padding: 20px 10px;
-    min-height: auto;
+  }
+
+  /* Invite/Join screens */
+  .invite-screen,
+  .join-screen {
+    padding: 20px 10px;
   }
 
   .matchmaking-title,
@@ -1946,8 +2058,23 @@ body {
     gap: 1px;
   }
 
+  .home-header {
+    gap: 6px;
+    margin-bottom: 15px;
+  }
+
+  .game-logo {
+    width: 40px;
+    height: 40px;
+  }
+
   .game-title {
     font-size: 24px;
+  }
+
+  .mode-icon {
+    width: 20px;
+    height: 20px;
   }
 
   .subtitle {
@@ -2026,9 +2153,18 @@ body {
     justify-content: center;
   }
 
+  .home-header {
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .game-logo {
+    width: 36px;
+    height: 36px;
+  }
+
   .game-title {
     font-size: 28px;
-    margin-bottom: 5px;
   }
 
   .subtitle {
@@ -2038,6 +2174,11 @@ body {
   .mode-selection {
     gap: 8px;
     justify-content: center;
+  }
+
+  .mode-icon {
+    width: 20px;
+    height: 20px;
   }
 
   .modal-overlay {
@@ -2051,7 +2192,6 @@ body {
 
   .matchmaking-screen,
   .pre-match-screen {
-    min-height: auto;
     padding: 15px;
   }
 }
@@ -2169,7 +2309,18 @@ body {
 }
 
 .stat-item .stat-value.streak-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
   color: #cc5500;
+}
+
+.streak-icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  vertical-align: middle;
 }
 
 .stats-breakdown {
@@ -2262,8 +2413,13 @@ body {
 
 /* Invite screen */
 .invite-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   padding: 30px 20px;
+  flex: 1;
 }
 
 .invite-screen h2 {
@@ -2330,8 +2486,13 @@ body {
 
 /* Join invite screen */
 .join-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   padding: 30px 20px;
+  flex: 1;
 }
 
 .join-screen h2 {
