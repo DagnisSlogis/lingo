@@ -1420,17 +1420,32 @@ body {
 /* Mobile phones */
 @media (max-width: 500px) {
   .desktop {
-    padding: 5px;
-    padding-top: max(5px, env(safe-area-inset-top));
-    padding-bottom: max(5px, env(safe-area-inset-bottom));
-    padding-left: max(5px, env(safe-area-inset-left));
-    padding-right: max(5px, env(safe-area-inset-right));
-    align-items: flex-start;
+    padding: 0;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    align-items: stretch;
   }
 
   .win95-window {
     max-width: 100%;
-    border-width: 1px;
+    border-width: 0;
+    box-shadow: none;
+  }
+
+  /* Simplified title bar for mobile - hide controls */
+  .title-bar {
+    padding: 6px 10px;
+  }
+
+  .title-bar-text {
+    font-size: 14px;
+    font-weight: bold;
+  }
+
+  .title-bar-controls {
+    display: none;
   }
 
   .window-content {
@@ -1522,18 +1537,41 @@ body {
   }
 
   /* Menu bar - touch friendly */
+  .menu-bar {
+    padding: 0;
+    border-bottom: 2px solid var(--win95-dark-gray);
+    justify-content: stretch;
+  }
+
+  .menu-item {
+    flex: 1;
+  }
+
   .menu-button {
-    padding: 8px 12px;
-    font-size: 14px;
+    padding: 10px 12px;
+    font-size: 13px;
+    width: 100%;
+    text-align: center;
+    min-height: 40px;
+    border-right: 1px solid var(--win95-dark-gray);
+  }
+
+  .menu-item:last-child .menu-button {
+    border-right: none;
   }
 
   .menu-dropdown {
     min-width: 180px;
+    left: 50%;
+    transform: translateX(-50%);
   }
 
   .menu-dropdown-item {
-    padding: 10px 20px;
+    padding: 12px 20px;
     font-size: 14px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
   }
 
   /* Buttons - touch friendly (min 44px tap target) */
@@ -1717,7 +1755,7 @@ body {
 /* Very small phones (iPhone SE, etc.) */
 @media (max-width: 375px) {
   .desktop {
-    padding: 3px;
+    padding: 0;
   }
 
   .tile {
@@ -1744,13 +1782,23 @@ body {
     margin-bottom: 20px;
   }
 
+  .title-bar {
+    padding: 5px 8px;
+  }
+
   .title-bar-text {
-    font-size: 11px;
+    font-size: 12px;
   }
 
   .menu-button {
-    padding: 6px 8px;
-    font-size: 12px;
+    padding: 8px 6px;
+    font-size: 11px;
+    min-height: 36px;
+  }
+
+  .menu-dropdown-item {
+    padding: 10px 16px;
+    font-size: 13px;
   }
 
   .window-content {
@@ -1784,6 +1832,14 @@ body {
   .desktop {
     padding: 5px;
     align-items: flex-start;
+  }
+
+  .win95-window {
+    border-width: 1px;
+  }
+
+  .title-bar-controls {
+    display: none;
   }
 
   .window-content {
