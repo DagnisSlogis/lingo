@@ -6,7 +6,7 @@ const FREQUENCY_URL =
 const UNIMORPH_URL =
   "https://raw.githubusercontent.com/unimorph/lav/master/lav";
 
-const MIN_FREQUENCY = 10;
+const MIN_FREQUENCY = 0;
 
 async function loadFrequencyMap(): Promise<Map<string, number>> {
   console.log("Downloading frequency list...");

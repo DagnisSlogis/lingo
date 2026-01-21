@@ -75,34 +75,34 @@ async function main() {
 
   // Load words from each file
   const easyWords = await loadWordsFromFile(
-    path.join(scriptsDir, "words_5.txt"),
+    path.join(scriptsDir, "words_4.txt"),
     "easy"
   );
-  console.log(`Loaded ${easyWords.length} easy words (5 letters)`);
+  console.log(`Loaded ${easyWords.length} easy words (4 letters)`);
 
   const mediumWords = await loadWordsFromFile(
-    path.join(scriptsDir, "words_7.txt"),
+    path.join(scriptsDir, "words_5.txt"),
     "medium"
   );
-  console.log(`Loaded ${mediumWords.length} medium words (7 letters)`);
+  console.log(`Loaded ${mediumWords.length} medium words (5 letters)`);
 
   const hardWords = await loadWordsFromFile(
-    path.join(scriptsDir, "words_9.txt"),
+    path.join(scriptsDir, "words_6.txt"),
     "hard"
   );
-  console.log(`Loaded ${hardWords.length} hard words (9 letters)`);
+  console.log(`Loaded ${hardWords.length} hard words (6 letters)`);
 
   const totalWords = easyWords.length + mediumWords.length + hardWords.length;
   console.log(`\nTotal: ${totalWords} words to seed\n`);
 
   // Seed each difficulty
-  console.log("=== Seeding EASY words (5 letters) ===");
+  console.log("=== Seeding EASY words (4 letters) ===");
   await seedWords(easyWords);
 
-  console.log("=== Seeding MEDIUM words (7 letters) ===");
+  console.log("=== Seeding MEDIUM words (5 letters) ===");
   await seedWords(mediumWords);
 
-  console.log("=== Seeding HARD words (9 letters) ===");
+  console.log("=== Seeding HARD words (6 letters) ===");
   await seedWords(hardWords);
 
   console.log("Done! Verifying word counts...\n");
