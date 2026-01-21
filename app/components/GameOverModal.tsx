@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { PixelIcon } from "./PixelIcon";
 
 interface GameOverModalProps {
@@ -7,7 +6,6 @@ interface GameOverModalProps {
   targetWord: string;
   hearts: number;
   onNewGame: () => void;
-  onSubmitScore: (playerName: string) => Promise<void>;
 }
 
 export function GameOverModal({
@@ -16,23 +14,8 @@ export function GameOverModal({
   targetWord,
   hearts,
   onNewGame,
-  onSubmitScore,
 }: GameOverModalProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-
   const isGameOver = hearts === 0;
-
-  const handleSubmit = async () => {
-    if (isSubmitting || submitted) return;
-    setIsSubmitting(true);
-    try {
-      await onSubmitScore("");
-      setSubmitted(true);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   return (
     <div className="modal-overlay">
@@ -57,19 +40,7 @@ export function GameOverModal({
                 Tavs rezultāts: <strong>{score}</strong> punkti
               </p>
 
-              {!submitted && score > 0 && (
-                <div className="submit-score">
-                  <button
-                    className="win95-button submit-button"
-                    onClick={handleSubmit}
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? "Saglabā..." : "Saglabāt rezultātu"}
-                  </button>
-                </div>
-              )}
-
-              {submitted && (
+              {score > 0 && (
                 <p className="submitted-message">Rezultāts saglabāts!</p>
               )}
             </>

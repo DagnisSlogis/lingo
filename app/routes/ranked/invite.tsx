@@ -54,13 +54,13 @@ function InviteScreen() {
     setIsCreating(false);
   };
 
-  // Check if invite has been matched
+  // Check if invite has been matched (only if we created one in this session)
   useEffect(() => {
-    if (invite?.status === "matched" && invite.matchId) {
+    if (inviteCode && invite?.status === "matched" && invite.matchId) {
       playSound("yourTurn");
       navigate({ to: `/ranked/match/${invite.matchId}` });
     }
-  }, [invite, navigate, playSound]);
+  }, [invite, inviteCode, navigate, playSound]);
 
   // Cancel invite on unmount
   useEffect(() => {

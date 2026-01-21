@@ -1,5 +1,24 @@
 /* Windows 95 Style CSS for Lingo - Classic OG Look */
 
+/* Windows 95 Font - MS Sans Serif (from 98.css) */
+@font-face {
+  font-family: "MS Sans Serif";
+  src: url("/fonts/ms_sans_serif.woff2") format("woff2"),
+       url("/fonts/ms_sans_serif.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "MS Sans Serif";
+  src: url("/fonts/ms_sans_serif_bold.woff2") format("woff2"),
+       url("/fonts/ms_sans_serif_bold.woff") format("woff");
+  font-weight: bold;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* CSS Reset and Base */
 *,
 *::before,
@@ -33,7 +52,7 @@
   --tile-input: #ff0000;
   --tile-empty: #808080;
 
-  /* Fonts - System font for Win95 look */
+  /* Fonts - Authentic Windows 95 font */
   --font-system: "MS Sans Serif", "Segoe UI", Tahoma, sans-serif;
 }
 
@@ -42,6 +61,7 @@ body {
   height: 100%;
   font-family: var(--font-system);
   font-size: 14px;
+  letter-spacing: 0.8px;
   background: var(--win95-bg);
   color: var(--win95-black);
   /* Prevent overscroll bounce on iOS */
@@ -248,7 +268,6 @@ body {
 .win95-button:active {
   border-color: var(--win95-dark-gray) var(--win95-light-gray)
     var(--win95-light-gray) var(--win95-dark-gray);
-  padding: 7px 15px 5px 17px;
 }
 
 .win95-button:focus {

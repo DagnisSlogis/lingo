@@ -210,6 +210,19 @@ export function useGame(difficulty: Difficulty) {
     }
   }, [submitScore, playerId, playerName, score, difficulty]);
 
+  // Auto-save score when game ends (hearts reach 0)
+  const scoreSubmittedRef = useRef(false);
+  useEffect(() => {
+    if (gameOver && hearts === 0 && score > 0 && !scoreSubmittedRef.current) {
+      scoreSubmittedRef.current = true;
+      submitToLeaderboard();
+    }
+    // Reset the ref when starting a new game
+    if (!gameOver) {
+      scoreSubmittedRef.current = false;
+    }
+  }, [gameOver, hearts, score, submitToLeaderboard]);
+
   return {
     board,
     currentRow,

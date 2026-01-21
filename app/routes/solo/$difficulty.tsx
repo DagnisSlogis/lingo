@@ -29,7 +29,6 @@ function SoloGame() {
     handleSubmit,
     handleBackspace,
     startNewGame,
-    submitToLeaderboard,
     rowAnimation,
     lastTypedIndex,
   } = useGame(validDifficulty);
@@ -69,7 +68,6 @@ function SoloGame() {
           score={score}
           targetWord={targetWord}
           onNewGame={startNewGame}
-          onSubmitScore={submitToLeaderboard}
           hearts={hearts}
         />
       )}

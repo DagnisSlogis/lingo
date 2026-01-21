@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      98.css:
+        specifier: ^0.1.21
+        version: 0.1.21
       '@tanstack/react-router':
         specifier: ^1.120.0
         version: 1.153.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -50,6 +53,9 @@ importers:
         version: 5.1.4(typescript@5.9.3)(vite@5.4.21(@types/node@25.0.9))
 
 packages:
+
+  98.css@0.1.21:
+    resolution: {integrity: sha512-ddk5qtUWyapM0Bzd5jwGExoE5fdSEGrP+F5VbYjyZLf2c9UVmn6w2NPTvCsoD4BWdGsjdLjlkQGhWwWTJcYQJQ==}
 
   '@babel/code-frame@7.28.6':
     resolution: {integrity: sha512-JYgintcMjRiCvS8mMECzaEn+m3PfoQiyqukOMCCVQtoJGYJw8j/8LBJEiqkHLkfwCcs74E3pbAUFNg7d9VNJ+Q==}
@@ -1215,6 +1221,8 @@ packages:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
 snapshots:
+
+  98.css@0.1.21: {}
 
   '@babel/code-frame@7.28.6':
     dependencies:
