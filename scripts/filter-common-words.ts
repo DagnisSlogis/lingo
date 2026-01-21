@@ -74,9 +74,9 @@ async function main() {
   const frequencyMap = await downloadFrequencyList();
 
   const files = [
+    { input: "words_4.txt", output: "words_4_common.txt", label: "4-letter" },
     { input: "words_5.txt", output: "words_5_common.txt", label: "5-letter" },
-    { input: "words_7.txt", output: "words_7_common.txt", label: "7-letter" },
-    { input: "words_9.txt", output: "words_9_common.txt", label: "9-letter" },
+    { input: "words_6.txt", output: "words_6_common.txt", label: "6-letter" },
   ];
 
   console.log(`Filtering with MIN_FREQUENCY = ${MIN_FREQUENCY}\n`);
