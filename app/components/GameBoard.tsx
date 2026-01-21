@@ -23,6 +23,8 @@ interface GameBoardProps {
   gameOver?: boolean;
   won?: boolean;
   targetWord?: string;
+  opponentGuess?: string;
+  showOpponentGuess?: boolean;
 }
 
 export function GameBoard({
@@ -39,6 +41,8 @@ export function GameBoard({
   gameOver = false,
   won = false,
   targetWord = "",
+  opponentGuess = "",
+  showOpponentGuess = false,
 }: GameBoardProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [popTile, setPopTile] = useState<{ row: number; col: number } | null>(null);
@@ -149,28 +153,33 @@ export function GameBoard({
           const animationClass = rowAnimation?.row === rowIndex && rowAnimation?.type
             ? rowAnimation.type
             : "";
+          const isCurrentRow = rowIndex === currentRow;
+          const isOpponentTypingRow = isCurrentRow && showOpponentGuess && !row.submitted;
 
           return (
-            <div key={rowIndex} className={`board-row ${animationClass}`}>
+            <div key={rowIndex} className={`board-row ${animationClass} ${isOpponentTypingRow ? "opponent-row" : ""}`}>
               {Array.from({ length: wordLength }).map((_, colIndex) => {
-                const isCurrentRow = rowIndex === currentRow;
+                // Show opponent's guess when it's their turn, otherwise show player's guess
+                const guessToShow = isOpponentTypingRow ? opponentGuess : currentGuess;
                 const letter = isCurrentRow && !row.submitted
-                  ? currentGuess[colIndex] || row.letters[colIndex] || ""
+                  ? guessToShow[colIndex] || row.letters[colIndex] || ""
                   : row.letters[colIndex] || "";
                 const state = row.submitted ? row.states[colIndex] : "empty";
                 const isRevealed = row.submitted || (isCurrentRow && colIndex === 0 && row.letters[0]);
                 const isPop = popTile?.row === rowIndex && popTile?.col === colIndex;
+                const isOpponentTile = isOpponentTypingRow && guessToShow[colIndex];
 
                 return (
                   <Tile
                     key={colIndex}
                     letter={letter}
                     state={state}
-                    isActive={isCurrentRow && colIndex === currentGuess.length && !row.submitted}
+                    isActive={isCurrentRow && colIndex === currentGuess.length && !row.submitted && !showOpponentGuess}
                     isRevealed={!!isRevealed}
                     delay={colIndex * 100}
                     index={colIndex}
                     isPop={isPop}
+                    isOpponent={!!isOpponentTile}
                   />
                 );
               })}
@@ -194,6 +203,7 @@ export function GameBoard({
             ))}
           </div>
         )}
+
       </div>
     </div>
   );

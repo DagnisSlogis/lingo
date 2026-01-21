@@ -4,11 +4,8 @@ import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { useMultiplayer } from "~/hooks/useMultiplayer";
 import { GameBoard } from "~/components/GameBoard";
-import { Hearts } from "~/components/Hearts";
-import { ScoreDisplay } from "~/components/ScoreDisplay";
 import { Timer } from "~/components/Timer";
-import { TurnIndicator } from "~/components/TurnIndicator";
-import { OpponentInfo } from "~/components/OpponentInfo";
+import { PlayerInfo } from "~/components/PlayerInfo";
 import { MatchOverModal } from "~/components/MatchOverModal";
 import { RoundOverModal } from "~/components/RoundOverModal";
 import { useSound } from "~/hooks/useSound";
@@ -43,8 +40,8 @@ function MatchGame() {
 
   const [rematchRequested, setRematchRequested] = useState(false);
 
-  const requestRematchMutation = useMutation((api as any).matches?.requestRematch);
-  const cancelRematchMutation = useMutation((api as any).matches?.cancelRematch);
+  const requestRematchMutation = useMutation(api.matches.requestRematch);
+  const cancelRematchMutation = useMutation(api.matches.cancelRematch);
 
   // Determine rematch state from match data
   const isPlayer1 = match?.player1Id === playerId;
@@ -125,31 +122,23 @@ function MatchGame() {
 
   return (
     <div className="match-screen">
-      <div className="match-header">
-        <div className="match-round">Raunds {state.round}</div>
-        <Timer seconds={state.timeRemaining} isActive={state.isMyTurn} />
-      </div>
-
-      <div className="match-players-row">
-        <div className="my-info">
-          <div className="my-name">{playerName}</div>
-          <Hearts hearts={state.myHearts} />
-          <ScoreDisplay score={state.myScore} label="Punkti" />
-        </div>
-
-        <TurnIndicator
-          isMyTurn={state.isMyTurn}
-          myName={playerName}
-          opponentName={state.opponentName}
+      <div className="match-header-compact">
+        <PlayerInfo
+          name="Es"
+          rating={state.myRating}
+          hearts={state.myHearts}
+          isMe={true}
         />
 
-        <OpponentInfo
+        <div className="round-timer-center">
+          <div className="match-round">Raunds {state.round}</div>
+          <Timer seconds={state.timeRemaining} isActive={state.isMyTurn} />
+        </div>
+
+        <PlayerInfo
           name={state.opponentName}
           rating={state.opponentRating}
           hearts={state.opponentHearts}
-          score={state.opponentScore}
-          currentGuess={opponentCurrentGuess}
-          wordLength={wordLength}
         />
       </div>
 
@@ -168,6 +157,8 @@ function MatchGame() {
           gameOver={!!roundOverInfo || state.matchOver}
           won={roundOverInfo?.roundWinner === "me"}
           targetWord={roundOverInfo?.word}
+          opponentGuess={opponentCurrentGuess}
+          showOpponentGuess={!state.isMyTurn && !state.matchOver}
         />
 
         {!state.isMyTurn && !state.matchOver && (

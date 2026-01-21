@@ -12,6 +12,7 @@ const TURN_TIME_LIMIT = 30; // seconds
 interface MultiplayerState {
   isMyTurn: boolean;
   timeRemaining: number;
+  myRating: number;
   opponentName: string;
   opponentRating: number;
   myHearts: number;
@@ -114,12 +115,19 @@ export function useMultiplayer(matchId: string) {
   const previousRoundRef = useRef<number | null>(null);
   const previousHeartsRef = useRef<{ p1: number; p2: number } | null>(null);
 
-  // Real-time match subscription - use type assertion for new API
+  // Real-time match subscription
   // Skip query if matchId is empty to avoid validation errors
+  const matchQuery = api.matches.getMatch;
   const match = useQuery(
-    (api as any).matches?.getMatch,
+    matchQuery,
     matchId ? { matchId } : "skip"
   ) as Match | undefined | null;
+
+  // Get current player info
+  const currentPlayer = useQuery(
+    api.players.getPlayer,
+    playerId ? { playerId } : "skip"
+  ) as Player | undefined | null;
 
   // Get opponent info
   const opponentId = match
@@ -128,17 +136,17 @@ export function useMultiplayer(matchId: string) {
       : match.player1Id
     : null;
   const opponent = useQuery(
-    (api as any).players?.getPlayer,
+    api.players.getPlayer,
     opponentId ? { playerId: opponentId } : "skip"
   ) as Player | undefined | null;
 
-  // Mutations - use type assertion for new API endpoints
-  const submitGuessMutation = useMutation((api as any).matches?.submitGuess);
-  const skipTurnMutation = useMutation((api as any).matches?.skipTurn);
-  const forfeitMatchMutation = useMutation((api as any).matches?.forfeitMatch);
-  const updateMatchRatingsMutation = useMutation((api as any).players?.updateMatchRatings);
-  const clearMatchmakingMutation = useMutation((api as any).matchmaking?.clearMatchmaking);
-  const updateTypingStatusMutation = useMutation((api as any).matches?.updateTypingStatus);
+  // Mutations
+  const submitGuessMutation = useMutation(api.matches.submitGuess);
+  const skipTurnMutation = useMutation(api.matches.skipTurn);
+  const forfeitMatchMutation = useMutation(api.matches.forfeitMatch);
+  const updateMatchRatingsMutation = useMutation(api.players.updateMatchRatings);
+  const clearMatchmakingMutation = useMutation(api.matchmaking.clearMatchmaking);
+  const updateTypingStatusMutation = useMutation(api.matches.updateTypingStatus);
 
   // Determine player position
   const isPlayer1 = match?.player1Id === playerId;
@@ -370,16 +378,12 @@ export function useMultiplayer(matchId: string) {
   useEffect(() => {
     if (match?.status === "finished" && match.winnerId && match._id) {
       // Call server-side mutation that handles idempotency
-      if (updateMatchRatingsMutation) {
-        updateMatchRatingsMutation({
-          matchId: match._id,
-        });
-      }
+      updateMatchRatingsMutation({
+        matchId: match._id,
+      });
 
       // Clear matchmaking entries
-      if (clearMatchmakingMutation) {
-        clearMatchmakingMutation({ playerId });
-      }
+      clearMatchmakingMutation({ playerId });
     }
   }, [
     match?.status,
@@ -396,13 +400,11 @@ export function useMultiplayer(matchId: string) {
     if (match.currentTurn !== playerId) return; // Only sync when it's my turn
 
     const timer = setTimeout(() => {
-      if (updateTypingStatusMutation) {
-        updateTypingStatusMutation({
-          matchId,
-          playerId,
-          currentGuess,
-        });
-      }
+      updateTypingStatusMutation({
+        matchId,
+        playerId,
+        currentGuess,
+      });
     }, 150); // Debounce 150ms
 
     return () => clearTimeout(timer);
@@ -458,13 +460,11 @@ export function useMultiplayer(matchId: string) {
     }
 
     try {
-      if (submitGuessMutation) {
-        await submitGuessMutation({
-          matchId,
-          playerId,
-          guess,
-        });
-      }
+      await submitGuessMutation({
+        matchId,
+        playerId,
+        guess,
+      });
 
       // Reset guess for next turn
       setCurrentGuess(match.firstLetter);
@@ -475,9 +475,7 @@ export function useMultiplayer(matchId: string) {
 
   const forfeitMatch = useCallback(async () => {
     try {
-      if (forfeitMatchMutation) {
-        await forfeitMatchMutation({ matchId, playerId });
-      }
+      await forfeitMatchMutation({ matchId, playerId });
     } catch (error) {
       console.error("Failed to forfeit:", error);
     }
@@ -487,6 +485,7 @@ export function useMultiplayer(matchId: string) {
   const state: MultiplayerState = {
     isMyTurn: match?.currentTurn === playerId,
     timeRemaining,
+    myRating: currentPlayer?.rankedRating ?? 1000,
     opponentName: opponent?.name ?? "Pretinieks",
     opponentRating: opponent?.rankedRating ?? 1000,
     myHearts: isPlayer1 ? (match?.player1Hearts ?? 3) : (match?.player2Hearts ?? 3),

@@ -8,14 +8,15 @@ interface TileProps {
   delay?: number;
   index?: number;
   isPop?: boolean;
+  isOpponent?: boolean;
 }
 
-export function Tile({ letter, state, isActive, isRevealed, delay = 0, index = 0, isPop = false }: TileProps) {
+export function Tile({ letter, state, isActive, isRevealed, delay = 0, index = 0, isPop = false, isOpponent = false }: TileProps) {
   const stateClass = isRevealed ? state : "empty";
 
   return (
     <div
-      className={`tile ${stateClass} ${isActive ? "active" : ""} ${letter ? "filled" : ""} ${isRevealed ? "revealed" : ""} ${isPop ? "pop" : ""}`}
+      className={`tile ${stateClass} ${isActive ? "active" : ""} ${letter ? "filled" : ""} ${isRevealed ? "revealed" : ""} ${isPop ? "pop" : ""} ${isOpponent ? "opponent" : ""}`}
       style={{
         "--delay": `${delay}ms`,
         "--tile-index": index,

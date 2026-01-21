@@ -57,8 +57,10 @@ function InviteScreen() {
   // Check if invite has been matched (only if we created one in this session)
   useEffect(() => {
     if (inviteCode && invite?.status === "matched" && invite.matchId) {
+      const matchIdStr = String(invite.matchId);
+      console.log("[InviteScreen] matched! navigating to match:", matchIdStr);
       playSound("yourTurn");
-      navigate({ to: `/ranked/match/${invite.matchId}` });
+      navigate({ to: `/ranked/match/${matchIdStr}` });
     }
   }, [invite, inviteCode, navigate, playSound]);
 

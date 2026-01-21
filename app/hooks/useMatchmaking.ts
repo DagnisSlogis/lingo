@@ -29,15 +29,15 @@ export function useMatchmaking() {
   const [isSearching, setIsSearching] = useState(false);
   const [matchId, setMatchId] = useState<string | null>(null);
 
-  // Queries - use type assertion for new API endpoints
-  const queueStatus = useQuery((api as any).matchmaking?.getStatus, { playerId });
-  const queueCount = useQuery((api as any).matchmaking?.getQueueCount);
+  // Queries
+  const queueStatus = useQuery(api.matchmaking.getStatus, { playerId });
+  const queueCount = useQuery(api.matchmaking.getQueueCount);
 
-  // Mutations - use type assertion for new API endpoints
-  const joinQueueMutation = useMutation((api as any).matchmaking?.joinQueue);
-  const leaveQueueMutation = useMutation((api as any).matchmaking?.leaveQueue);
-  const clearMatchmakingMutation = useMutation((api as any).matchmaking?.clearMatchmaking);
-  const getOrCreatePlayerMutation = useMutation((api as any).players?.getOrCreatePlayer);
+  // Mutations
+  const joinQueueMutation = useMutation(api.matchmaking.joinQueue);
+  const leaveQueueMutation = useMutation(api.matchmaking.leaveQueue);
+  const clearMatchmakingMutation = useMutation(api.matchmaking.clearMatchmaking);
+  const getOrCreatePlayerMutation = useMutation(api.players.getOrCreatePlayer);
 
   // Handle queue status changes from real-time subscription
   useEffect(() => {
@@ -54,18 +54,14 @@ export function useMatchmaking() {
   const joinQueue = useCallback(async () => {
     try {
       // Ensure player exists in players table
-      if (getOrCreatePlayerMutation) {
-        await getOrCreatePlayerMutation({ playerId, name: playerName });
-      }
+      await getOrCreatePlayerMutation({ playerId, name: playerName });
 
       // Join the matchmaking queue
-      if (joinQueueMutation) {
-        const result = await joinQueueMutation({ playerId });
+      const result = await joinQueueMutation({ playerId });
 
-        if (result.status === "matched" && result.matchId) {
-          setMatchId(result.matchId as string);
-          return { matched: true, matchId: result.matchId };
-        }
+      if (result.status === "matched" && result.matchId) {
+        setMatchId(result.matchId as string);
+        return { matched: true, matchId: result.matchId };
       }
 
       setIsSearching(true);
@@ -78,9 +74,7 @@ export function useMatchmaking() {
 
   const leaveQueue = useCallback(async () => {
     try {
-      if (leaveQueueMutation) {
-        await leaveQueueMutation({ playerId });
-      }
+      await leaveQueueMutation({ playerId });
       setIsSearching(false);
       setMatchId(null);
     } catch (error) {
@@ -90,9 +84,7 @@ export function useMatchmaking() {
 
   const clearMatchmaking = useCallback(async () => {
     try {
-      if (clearMatchmakingMutation) {
-        await clearMatchmakingMutation({ playerId });
-      }
+      await clearMatchmakingMutation({ playerId });
       setIsSearching(false);
       setMatchId(null);
     } catch (error) {

@@ -557,6 +557,13 @@ body {
   border-color: #a0a0a0 #404040 #404040 #a0a0a0;
 }
 
+/* Opponent typing - blue tint to distinguish */
+.tile.opponent {
+  background: #606080;
+  color: var(--win95-white);
+  border-color: #8080a0 #303050 #303050 #8080a0;
+}
+
 .tile.pop {
   animation: pop 0.1s ease-out;
 }
@@ -1198,6 +1205,90 @@ body {
   flex-direction: column;
 }
 
+/* Compact Match Header - Single Row */
+.match-header-compact {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 6px 8px;
+  background: var(--win95-gray);
+  border: 2px solid;
+  border-color: var(--win95-dark-gray) var(--win95-light-gray)
+    var(--win95-light-gray) var(--win95-dark-gray);
+  gap: 10px;
+}
+
+.my-info-compact {
+  display: flex;
+  align-items: center;
+}
+
+.round-timer-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.round-timer-center .match-round {
+  font-weight: bold;
+  font-size: 12px;
+  color: var(--win95-black);
+}
+
+.round-timer-center .timer {
+  padding: 2px 10px;
+  border: none;
+  background: transparent;
+}
+
+.round-timer-center .timer-label {
+  display: none;
+}
+
+.round-timer-center .timer-value {
+  font-size: 16px;
+}
+
+/* Player Info - Compact */
+.player-info-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.player-info-compact.me {
+  align-items: flex-start;
+}
+
+.player-info-compact.opponent {
+  align-items: flex-end;
+}
+
+.player-name-rating {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.player-name-compact {
+  font-weight: bold;
+  font-size: 13px;
+  color: var(--win95-black);
+}
+
+.player-rating-compact {
+  color: var(--win95-dark-gray);
+  font-size: 11px;
+}
+
+.player-hearts-compact {
+  display: flex;
+  gap: 2px;
+}
+
+/* Legacy match header - keeping for backwards compat */
 .match-header {
   display: flex;
   justify-content: space-between;
@@ -1866,6 +1957,40 @@ body {
   }
 
   /* Multiplayer responsive */
+  .match-header-compact {
+    padding: 4px 6px;
+    gap: 6px;
+  }
+
+  .round-timer-center .match-round {
+    font-size: 11px;
+  }
+
+  .round-timer-center .timer-value {
+    font-size: 14px;
+  }
+
+  .player-info-compact {
+    gap: 2px;
+  }
+
+  .player-hearts-compact .heart img {
+    width: 18px;
+    height: 18px;
+  }
+
+  .player-name-compact {
+    font-size: 11px;
+  }
+
+  .player-rating-compact {
+    font-size: 10px;
+  }
+
+  .player-name-rating {
+    gap: 4px;
+  }
+
   .match-header {
     padding: 6px;
     flex-wrap: wrap;

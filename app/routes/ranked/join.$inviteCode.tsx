@@ -52,9 +52,12 @@ function JoinInviteScreen() {
         playerName,
       });
 
+      console.log("[JoinInvite] joinInvite result:", result);
       if (result.success && result.matchId) {
+        const matchIdStr = String(result.matchId);
+        console.log("[JoinInvite] navigating to match:", matchIdStr, "type:", typeof result.matchId);
         playSound("yourTurn");
-        navigate({ to: `/ranked/match/${result.matchId}` });
+        navigate({ to: `/ranked/match/${matchIdStr}` });
       } else {
         setError(result.error || "Neizdevās pievienoties");
         playSound("wrong");
