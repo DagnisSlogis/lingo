@@ -63,7 +63,10 @@ export function GameBoard({
     function handleKeyDown(e: KeyboardEvent) {
       if (disabled) return;
 
-      // Only handle Enter and Backspace globally
+      // Skip if the event is from the hidden input (it handles its own keys)
+      if (e.target === inputRef.current) return;
+
+      // Only handle Enter and Backspace globally (when input not focused)
       if (e.key === "Enter") {
         e.preventDefault();
         onSubmit();

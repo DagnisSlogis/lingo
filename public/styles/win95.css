@@ -156,7 +156,7 @@ body {
 
 .window-content {
   padding: 6px;
-  background: var(--game-bg);
+  background: var(--win95-gray);
   min-height: 300px;
 }
 
@@ -264,21 +264,56 @@ body {
 /* Home Screen */
 .home-screen {
   text-align: center;
-  padding: 30px 20px;
+  padding: 20px 20px 30px;
+}
+
+/* Status Bar - Win95 sunken panel style */
+.status-bar {
+  display: flex;
+  justify-content: space-between;
+  gap: 2px;
+  padding: 2px;
+  background: var(--win95-gray);
+}
+
+.status-panel {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-family: var(--font-system);
+  color: var(--win95-black);
+  padding: 1px 6px;
+  background: var(--win95-gray);
+  /* Sunken panel effect */
+  border: 1px solid;
+  border-color: var(--win95-dark-gray) var(--win95-light-gray) var(--win95-light-gray) var(--win95-dark-gray);
+  flex: 1;
+  min-width: 0;
+}
+
+.status-panel:first-child {
+  flex: 2;
+}
+
+.status-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .game-title {
   font-size: 48px;
   font-weight: bold;
-  color: var(--win95-white);
-  text-shadow: 3px 3px 0 var(--win95-black);
-  margin-bottom: 10px;
+  color: var(--win95-title-blue);
+  text-shadow: 1px 1px 0 var(--win95-light-gray);
+  margin-bottom: 5px;
 }
 
 .subtitle {
-  color: var(--win95-white);
-  font-size: 16px;
-  margin-bottom: 40px;
+  color: var(--win95-black);
+  font-size: 14px;
+  margin-bottom: 30px;
 }
 
 .mode-selection {
@@ -322,8 +357,7 @@ body {
 }
 
 .difficulty-screen h2 {
-  color: var(--win95-white);
-  text-shadow: 1px 1px 0 var(--win95-black);
+  color: var(--win95-black);
   margin-bottom: 30px;
 }
 
@@ -378,9 +412,12 @@ body {
 
 .score-display {
   font-weight: bold;
-  font-size: 18px;
-  color: #ffff00;
-  text-shadow: 1px 1px 0 #000000;
+  font-size: 16px;
+  color: var(--win95-black);
+  background: var(--win95-white);
+  padding: 2px 8px;
+  border: 1px solid;
+  border-color: var(--win95-dark-gray) var(--win95-light-gray) var(--win95-light-gray) var(--win95-dark-gray);
 }
 
 .score-label {
@@ -388,8 +425,7 @@ body {
 }
 
 .score-value {
-  color: #ffff00;
-  text-shadow: 1px 1px 0 #000000;
+  color: var(--win95-black);
 }
 
 /* Game Board */
@@ -451,11 +487,11 @@ body {
   border-color: #a0a0a0 #404040 #404040 #a0a0a0;
 }
 
-/* Filled but not submitted - RED background, white text */
+/* Filled but not submitted - keep gray, just show letter */
 .tile.filled {
-  background: var(--tile-input);
+  background: #808080;
   color: var(--win95-white);
-  border-color: #ff6060 #800000 #800000 #ff6060;
+  border-color: #a0a0a0 #404040 #404040 #a0a0a0;
 }
 
 .tile.pop {
@@ -660,6 +696,17 @@ body {
 }
 
 /* Leaderboard Modal */
+.mode-tabs {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.mode-tabs .tab-button {
+  flex: 1;
+  font-weight: bold;
+}
+
 .difficulty-tabs {
   display: flex;
   gap: 5px;
@@ -820,19 +867,18 @@ body {
 }
 
 .ranked-screen h2 {
-  color: var(--win95-white);
-  text-shadow: 1px 1px 0 var(--win95-black);
+  color: var(--win95-black);
   margin-bottom: 20px;
 }
 
 .coming-soon {
   font-size: 24px;
-  color: var(--win95-white);
+  color: var(--win95-black);
   margin-bottom: 10px;
 }
 
 .description {
-  color: var(--win95-white);
+  color: var(--win95-black);
   margin-bottom: 30px;
 }
 
@@ -914,8 +960,7 @@ body {
 }
 
 .matchmaking-title {
-  color: var(--win95-white);
-  text-shadow: 1px 1px 0 var(--win95-black);
+  color: var(--win95-black);
   font-size: 24px;
   font-weight: bold;
   margin-bottom: 30px;
@@ -994,8 +1039,7 @@ body {
 }
 
 .pre-match-title {
-  color: var(--win95-white);
-  text-shadow: 1px 1px 0 var(--win95-black);
+  color: var(--win95-black);
   font-size: 24px;
   font-weight: bold;
   margin-bottom: 30px;
@@ -1037,8 +1081,7 @@ body {
 .vs-divider {
   font-size: 24px;
   font-weight: bold;
-  color: var(--win95-white);
-  text-shadow: 1px 1px 0 var(--win95-black);
+  color: var(--win95-black);
 }
 
 .ready-button {
@@ -1537,7 +1580,19 @@ body {
   }
 
   .home-screen {
-    padding: 20px 10px;
+    padding: 15px 8px;
+  }
+
+  /* Status bar mobile */
+  .status-bar {
+    gap: 2px;
+    padding: 2px;
+  }
+
+  .status-panel {
+    font-size: 10px;
+    padding: 1px 4px;
+    gap: 2px;
   }
 
   .mode-selection {
@@ -2134,7 +2189,7 @@ body {
 
 .quick-play-info {
   font-size: 11px;
-  color: var(--win95-white);
+  color: var(--win95-dark-gray);
   margin-top: 5px;
 }
 
@@ -2145,8 +2200,7 @@ body {
 }
 
 .invite-screen h2 {
-  color: var(--win95-white);
-  text-shadow: 1px 1px 0 var(--win95-black);
+  color: var(--win95-black);
   margin-bottom: 20px;
 }
 
@@ -2198,7 +2252,7 @@ body {
 }
 
 .waiting-message {
-  color: var(--win95-white);
+  color: var(--win95-black);
   font-size: 16px;
   margin-bottom: 20px;
 }
@@ -2214,8 +2268,7 @@ body {
 }
 
 .join-screen h2 {
-  color: var(--win95-white);
-  text-shadow: 1px 1px 0 var(--win95-black);
+  color: var(--win95-black);
   margin-bottom: 20px;
 }
 

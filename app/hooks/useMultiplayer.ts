@@ -108,12 +108,6 @@ export function useMultiplayer(matchId: string) {
   const previousTurnRef = useRef<string | null>(null);
   const previousRoundRef = useRef<number | null>(null);
   const previousHeartsRef = useRef<{ p1: number; p2: number } | null>(null);
-  const ratingUpdatedRef = useRef(false);
-
-  // Reset rating updated flag when matchId changes (e.g., rematch)
-  useEffect(() => {
-    ratingUpdatedRef.current = false;
-  }, [matchId]);
 
   // Real-time match subscription - use type assertion for new API
   // Skip query if matchId is empty to avoid validation errors
@@ -137,7 +131,7 @@ export function useMultiplayer(matchId: string) {
   const submitGuessMutation = useMutation((api as any).matches?.submitGuess);
   const skipTurnMutation = useMutation((api as any).matches?.skipTurn);
   const forfeitMatchMutation = useMutation((api as any).matches?.forfeitMatch);
-  const updateRatingMutation = useMutation((api as any).players?.updateRating);
+  const updateMatchRatingsMutation = useMutation((api as any).players?.updateMatchRatings);
   const clearMatchmakingMutation = useMutation((api as any).matchmaking?.clearMatchmaking);
 
   // Determine player position
@@ -367,19 +361,13 @@ export function useMultiplayer(matchId: string) {
     previousHeartsRef.current = { p1: currentP1Hearts, p2: currentP2Hearts };
   }, [matchCurrentRound, matchPreviousRoundWord, matchPlayer1Hearts, matchPlayer2Hearts, isPlayer1]);
 
-  // Handle match completion - update ratings (only once)
-  const opponentRating = opponent?.rankedRating;
+  // Handle match completion - update ratings (idempotent - safe to call from both clients)
   useEffect(() => {
-    if (match?.status === "finished" && match.winnerId && opponentRating !== undefined && !ratingUpdatedRef.current) {
-      ratingUpdatedRef.current = true;
-      const didWin = match.winnerId === playerId;
-
-      // Update both players' ratings
-      if (updateRatingMutation) {
-        updateRatingMutation({
-          playerId,
-          won: didWin,
-          opponentRating,
+    if (match?.status === "finished" && match.winnerId && match._id) {
+      // Call server-side mutation that handles idempotency
+      if (updateMatchRatingsMutation) {
+        updateMatchRatingsMutation({
+          matchId: match._id,
         });
       }
 
@@ -391,9 +379,9 @@ export function useMultiplayer(matchId: string) {
   }, [
     match?.status,
     match?.winnerId,
+    match?._id,
     playerId,
-    opponentRating,
-    updateRatingMutation,
+    updateMatchRatingsMutation,
     clearMatchmakingMutation,
   ]);
 

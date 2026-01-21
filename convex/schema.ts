@@ -63,6 +63,8 @@ export default defineSchema({
     player1WantsRematch: v.optional(v.boolean()),
     player2WantsRematch: v.optional(v.boolean()),
     rematchMatchId: v.optional(v.id("matches")),
+    // Track if ratings have been updated (prevents duplicate updates)
+    ratingsUpdated: v.optional(v.boolean()),
   })
     .index("by_status", ["status"])
     .index("by_player", ["player1Id"])

@@ -1,5 +1,6 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { Id } from "./_generated/dataModel";
 
 // Get or create a player
 export const getOrCreatePlayer = mutation({
@@ -81,6 +82,81 @@ export const updateRating = mutation({
       oldRating: player.rankedRating,
       newRating,
       change: ratingChange,
+    };
+  },
+});
+
+// Update both players' ratings after a match (idempotent - safe to call multiple times)
+export const updateMatchRatings = mutation({
+  args: {
+    matchId: v.id("matches"),
+  },
+  handler: async (ctx, args) => {
+    const match = await ctx.db.get(args.matchId);
+
+    if (!match) {
+      return { success: false, error: "Match not found" };
+    }
+
+    // Check if ratings already updated (idempotency check)
+    if (match.ratingsUpdated) {
+      return { success: true, alreadyUpdated: true };
+    }
+
+    if (match.status !== "finished" || !match.winnerId) {
+      return { success: false, error: "Match not finished" };
+    }
+
+    // Get both players
+    const player1 = await ctx.db
+      .query("players")
+      .withIndex("by_player_id", (q) => q.eq("playerId", match.player1Id))
+      .first();
+
+    const player2 = await ctx.db
+      .query("players")
+      .withIndex("by_player_id", (q) => q.eq("playerId", match.player2Id))
+      .first();
+
+    if (!player1 || !player2) {
+      return { success: false, error: "Players not found" };
+    }
+
+    const player1Won = match.winnerId === match.player1Id;
+
+    // Calculate ELO changes
+    const K = 32;
+
+    const player1Expected = 1 / (1 + Math.pow(10, (player2.rankedRating - player1.rankedRating) / 400));
+    const player1Actual = player1Won ? 1 : 0;
+    const player1Change = Math.round(K * (player1Actual - player1Expected));
+
+    const player2Expected = 1 / (1 + Math.pow(10, (player1.rankedRating - player2.rankedRating) / 400));
+    const player2Actual = player1Won ? 0 : 1;
+    const player2Change = Math.round(K * (player2Actual - player2Expected));
+
+    // Update both players
+    await ctx.db.patch(player1._id, {
+      rankedRating: Math.max(0, player1.rankedRating + player1Change),
+      rankedWins: player1Won ? player1.rankedWins + 1 : player1.rankedWins,
+      rankedLosses: player1Won ? player1.rankedLosses : player1.rankedLosses + 1,
+    });
+
+    await ctx.db.patch(player2._id, {
+      rankedRating: Math.max(0, player2.rankedRating + player2Change),
+      rankedWins: player1Won ? player2.rankedWins : player2.rankedWins + 1,
+      rankedLosses: player1Won ? player2.rankedLosses + 1 : player2.rankedLosses,
+    });
+
+    // Mark ratings as updated (idempotency flag)
+    await ctx.db.patch(args.matchId, {
+      ratingsUpdated: true,
+    });
+
+    return {
+      success: true,
+      player1Change,
+      player2Change,
     };
   },
 });
