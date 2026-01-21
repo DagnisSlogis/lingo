@@ -14,7 +14,6 @@ bērns
 tētis
 sieva
 puika
-gaida
 vaina
 ideja
 spēle
@@ -272,7 +271,6 @@ emīrs
 esība
 gārša
 gauma
-ģifts
 ģints
 gnīda
 golfs
@@ -299,7 +297,6 @@ klēts
 krāce
 krusa
 kurds
-ķūska
 laima
 laims
 lanka
@@ -370,7 +367,6 @@ stāds
 stara
 stepe
 store
-šurks
 taiga
 tāsis
 taurs
@@ -393,8 +389,6 @@ vēsma
 viese
 vilns
 virsa
-žorks
-žurks
 zutis
 zveja
 zvīna

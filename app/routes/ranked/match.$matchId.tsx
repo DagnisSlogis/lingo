@@ -67,9 +67,10 @@ function MatchGame() {
   useEffect(() => {
     if (rematchMatchId) {
       playSound("yourTurn");
-      navigate({ to: `/ranked/match/${rematchMatchId}` });
+      // Use window.location for reliable navigation (Tanstack Router can be flaky)
+      window.location.href = `/ranked/match/${rematchMatchId}`;
     }
-  }, [rematchMatchId, navigate, playSound]);
+  }, [rematchMatchId, playSound]);
 
   const handlePlayAgain = async () => {
     if (!matchId || !playerId || !requestRematchMutation) return;
@@ -77,7 +78,8 @@ function MatchGame() {
     // If rematch already exists (from subscription), navigate directly
     if (rematchMatchId) {
       playSound("yourTurn");
-      navigate({ to: `/ranked/match/${rematchMatchId}` });
+      // Use window.location for reliable navigation (Tanstack Router can be flaky)
+      window.location.href = `/ranked/match/${rematchMatchId}`;
       return;
     }
 
@@ -90,7 +92,8 @@ function MatchGame() {
 
       if (result.rematchMatchId) {
         playSound("yourTurn");
-        navigate({ to: `/ranked/match/${result.rematchMatchId}` });
+        // Use window.location for reliable navigation (Tanstack Router can be flaky)
+        window.location.href = `/ranked/match/${result.rematchMatchId}`;
       } else if (result.waiting) {
         playSound("correct");
       }

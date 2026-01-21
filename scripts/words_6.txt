@@ -44,7 +44,6 @@ vasara
 atmiņa
 zobens
 pilots
-prieka
 viesis
 bībele
 adrese
@@ -229,7 +228,6 @@ atvere
 augsme
 aziāte
 bālums
-banāna
 barels
 bārijs
 batāte
@@ -312,7 +310,6 @@ koniņš
 korāns
 košana
 krāsne
-krāsts
 kreile
 krists
 kuilis
@@ -343,7 +340,6 @@ možums
 musons
 nākote
 nebēda
-nedeļa
 nedele
 olnīca
 orbīta
@@ -362,8 +358,6 @@ parīts
 pātaga
 pīlēns
 pipars
-pipele
-prieca
 psalms
 puravs
 purvis
@@ -394,8 +388,6 @@ sirpis
 sivēns
 skanis
 sklēra
-skudre
-skudrs
 sliņķe
 šlipse
 spanis
@@ -403,7 +395,6 @@ speķis
 spilva
 spilve
 spulga
-starks
 stirna
 strads
 strēla
@@ -428,13 +419,7 @@ turība
 ubadze
 ungārs
 uzbeks
-vabala
-vabale
-vabals
 vabele
-vabols
-vabule
-vabuls
 vaisla
 valgme
 vecība

@@ -171,7 +171,7 @@ export const joinInvite = mutation({
     const hostGoesFirst = Math.random() < 0.5;
     const firstRoundStarter = hostGoesFirst ? invite.hostPlayerId : args.playerId;
 
-    // Create the match
+    // Create the match with fixed difficulty (invite games keep the chosen difficulty)
     const matchId = await ctx.db.insert("matches", {
       player1Id: invite.hostPlayerId,
       player2Id: args.playerId,
@@ -190,6 +190,7 @@ export const joinInvite = mutation({
       player2Score: 0,
       createdAt: Date.now(),
       updatedAt: Date.now(),
+      fixedDifficulty: true,
     });
 
     // Update invite status

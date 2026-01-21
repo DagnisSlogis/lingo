@@ -76,6 +76,9 @@ export default defineSchema({
     // Track if player left the match (for rematch flow)
     player1Left: v.optional(v.boolean()),
     player2Left: v.optional(v.boolean()),
+    // If true, difficulty stays fixed for all rounds (invite games)
+    // If false/undefined, difficulty randomizes each round (matchmaking)
+    fixedDifficulty: v.optional(v.boolean()),
   })
     .index("by_status", ["status"])
     .index("by_player", ["player1Id"])

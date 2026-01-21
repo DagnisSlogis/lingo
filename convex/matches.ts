@@ -186,16 +186,23 @@ export const submitGuess = mutation({
       }
 
       // Start new round
+      // Determine difficulty: fixed for invite games, random for matchmaking
       const difficulties = ["easy", "medium", "hard"];
-      const randomDifficulty =
-        difficulties[Math.floor(Math.random() * difficulties.length)];
+      const newDifficulty = match.fixedDifficulty
+        ? match.currentDifficulty
+        : difficulties[Math.floor(Math.random() * difficulties.length)];
 
       const words = await ctx.db
         .query("words")
-        .withIndex("by_difficulty", (q) => q.eq("difficulty", randomDifficulty))
+        .withIndex("by_difficulty", (q) => q.eq("difficulty", newDifficulty))
         .collect();
 
-      let newWord = "mājas";
+      const fallbackWords: Record<string, string> = {
+        easy: "māja",
+        medium: "vārds",
+        hard: "draugs",
+      };
+      let newWord = fallbackWords[newDifficulty] || "vārds";
       if (words.length > 0) {
         newWord = words[Math.floor(Math.random() * words.length)].word;
       }
@@ -210,7 +217,7 @@ export const submitGuess = mutation({
         guessResults: [],
         previousRoundWord: match.currentWord,
         currentWord: newWord,
-        currentDifficulty: randomDifficulty,
+        currentDifficulty: newDifficulty,
         currentRound: match.currentRound + 1,
         currentTurn: roundStarter,
         turnStartedAt: Date.now(),
@@ -285,33 +292,40 @@ export const submitGuess = mutation({
       }
 
       // Start new round - both lost a heart
-      const difficulties = ["easy", "medium", "hard"];
-      const randomDifficulty =
-        difficulties[Math.floor(Math.random() * difficulties.length)];
+      // Determine difficulty: fixed for invite games, random for matchmaking
+      const difficulties2 = ["easy", "medium", "hard"];
+      const newDifficulty2 = match.fixedDifficulty
+        ? match.currentDifficulty
+        : difficulties2[Math.floor(Math.random() * difficulties2.length)];
 
-      const words = await ctx.db
+      const words2 = await ctx.db
         .query("words")
-        .withIndex("by_difficulty", (q) => q.eq("difficulty", randomDifficulty))
+        .withIndex("by_difficulty", (q) => q.eq("difficulty", newDifficulty2))
         .collect();
 
-      let newWord = "mājas";
-      if (words.length > 0) {
-        newWord = words[Math.floor(Math.random() * words.length)].word;
+      const fallbackWords2: Record<string, string> = {
+        easy: "māja",
+        medium: "vārds",
+        hard: "draugs",
+      };
+      let newWord2 = fallbackWords2[newDifficulty2] || "vārds";
+      if (words2.length > 0) {
+        newWord2 = words2[Math.floor(Math.random() * words2.length)].word;
       }
 
       // Alternate who goes first each round based on who started round 1
-      const firstStarter = match.firstRoundStarter || match.player1Id;
-      const secondStarter = firstStarter === match.player1Id ? match.player2Id : match.player1Id;
-      const roundStarter = match.currentRound % 2 === 0 ? firstStarter : secondStarter;
+      const firstStarter2 = match.firstRoundStarter || match.player1Id;
+      const secondStarter2 = firstStarter2 === match.player1Id ? match.player2Id : match.player1Id;
+      const roundStarter2 = match.currentRound % 2 === 0 ? firstStarter2 : secondStarter2;
 
       await ctx.db.patch(args.matchId, {
         guesses: [],
         guessResults: [],
         previousRoundWord: match.currentWord,
-        currentWord: newWord,
-        currentDifficulty: randomDifficulty,
+        currentWord: newWord2,
+        currentDifficulty: newDifficulty2,
         currentRound: match.currentRound + 1,
-        currentTurn: roundStarter,
+        currentTurn: roundStarter2,
         turnStartedAt: Date.now(),
         player1Hearts: newPlayer1Hearts,
         player2Hearts: newPlayer2Hearts,
@@ -403,16 +417,23 @@ export const skipTurn = mutation({
 
     // If 6 guesses reached, start new round (hearts already deducted above)
     if (newGuesses.length >= 6) {
+      // Determine difficulty: fixed for invite games, random for matchmaking
       const difficulties = ["easy", "medium", "hard"];
-      const randomDifficulty =
-        difficulties[Math.floor(Math.random() * difficulties.length)];
+      const newDifficulty = match.fixedDifficulty
+        ? match.currentDifficulty
+        : difficulties[Math.floor(Math.random() * difficulties.length)];
 
       const words = await ctx.db
         .query("words")
-        .withIndex("by_difficulty", (q) => q.eq("difficulty", randomDifficulty))
+        .withIndex("by_difficulty", (q) => q.eq("difficulty", newDifficulty))
         .collect();
 
-      let newWord = "mājas";
+      const fallbackWords: Record<string, string> = {
+        easy: "māja",
+        medium: "vārds",
+        hard: "draugs",
+      };
+      let newWord = fallbackWords[newDifficulty] || "vārds";
       if (words.length > 0) {
         newWord = words[Math.floor(Math.random() * words.length)].word;
       }
@@ -427,7 +448,7 @@ export const skipTurn = mutation({
         guessResults: [],
         previousRoundWord: match.currentWord,
         currentWord: newWord,
-        currentDifficulty: randomDifficulty,
+        currentDifficulty: newDifficulty,
         currentRound: match.currentRound + 1,
         currentTurn: roundStarter,
         turnStartedAt: Date.now(),
@@ -565,6 +586,7 @@ export const requestRematch = mutation({
         player2Score: 0,
         createdAt: Date.now(),
         updatedAt: Date.now(),
+        fixedDifficulty: match.fixedDifficulty,
       });
 
       // Update original match with rematch ID

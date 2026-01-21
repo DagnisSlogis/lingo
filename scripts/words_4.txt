@@ -48,7 +48,6 @@ elpa
 inde
 cūka
 govs
-hans
 deja
 vīns
 logs
@@ -161,14 +160,12 @@ dome
 dusa
 egle
 ezis
-gane
 goba
 guba
 guns
 jaks
 java
 jūgs
-jura
 kaķe
 kāss
 keda
@@ -189,15 +186,13 @@ lūpa
 mice
 miza
 nāss
-nāvs
+nāve
 oāze
-odzs
 ogle
 osis
 peža
 pika
 pile
-lohi
 pors
 purs
 pūte
@@ -205,7 +200,6 @@ puve
 raja
 rasa
 rija
-rits
 rūda
 rūpa
 sams

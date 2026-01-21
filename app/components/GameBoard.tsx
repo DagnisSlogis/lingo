@@ -45,14 +45,16 @@ export function GameBoard({
   showOpponentGuess = false,
 }: GameBoardProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const boardRef = useRef<HTMLDivElement>(null);
   const [popTile, setPopTile] = useState<{ row: number; col: number } | null>(null);
   const isComposingRef = useRef(false);
 
-  // Auto-focus when it becomes player's turn
+  // Auto-focus and scroll board into view when it becomes player's turn
   useEffect(() => {
     if (!disabled) {
       // Small delay to ensure DOM is ready, especially on mobile
       setTimeout(() => {
+        boardRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
         inputRef.current?.focus();
       }, 100);
     }
@@ -61,6 +63,7 @@ export function GameBoard({
   // Also focus on currentRow change (new round)
   useEffect(() => {
     if (!disabled) {
+      boardRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
       inputRef.current?.focus();
     }
   }, [currentRow]);
@@ -116,6 +119,7 @@ export function GameBoard({
 
   return (
     <div
+      ref={boardRef}
       className="game-board"
       onClick={handleFocus}
       onTouchStart={handleFocus}
