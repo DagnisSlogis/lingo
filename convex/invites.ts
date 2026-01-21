@@ -121,7 +121,13 @@ export const joinInvite = mutation({
       .withIndex("by_difficulty", (q) => q.eq("difficulty", invite.difficulty))
       .collect();
 
-    let word = "vārds"; // Fallback
+    // Fallback words by difficulty: easy=4, medium=5, hard=6 letters
+    const fallbackWords: Record<string, string> = {
+      easy: "māja",
+      medium: "vārds",
+      hard: "draugs",
+    };
+    let word = fallbackWords[invite.difficulty] || "vārds";
     if (words.length > 0) {
       word = words[Math.floor(Math.random() * words.length)].word;
     }

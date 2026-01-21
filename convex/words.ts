@@ -14,10 +14,11 @@ export const getRandomWord = mutation({
     if (words.length === 0) {
       // Return fallback words if database is empty
       // New word lengths: easy=4, medium=5, hard=6
+      // Fallback words - easy=4 letters, medium=5 letters, hard=6 letters
       const fallbackWords: Record<string, string[]> = {
-        easy: ["māja", "suns", "zeme", "sula", "pļava"],
-        medium: ["vārds", "spēle", "laiks", "diena", "nakts"],
-        hard: ["ziemas", "vasara", "grāmata", "draugs"],
+        easy: ["māja", "suns", "zeme", "sula", "koks", "lapa", "ziņa", "roze"],
+        medium: ["vārds", "spēle", "laiks", "diena", "nakts", "galds", "grāds"],
+        hard: ["ziemas", "vasara", "draugs", "brīdis", "laimes", "skaņas"],
       };
 
       const fallback = fallbackWords[args.difficulty] || fallbackWords.easy;
