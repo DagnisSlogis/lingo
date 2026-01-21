@@ -1,4 +1,4 @@
-/* Windows 95 Style CSS for Lingo */
+/* Windows 95 Style CSS for Lingo - Classic OG Look */
 
 /* CSS Reset and Base */
 *,
@@ -10,28 +10,31 @@
 }
 
 :root {
-  /* Windows 95 Colors - muted for classic Lingo look */
-  --win95-bg: #005a5a;
-  --win95-gray: #b0b0b0;
-  --win95-dark-gray: #707070;
-  --win95-light-gray: #d0d0d0;
-  --win95-white: #f0f0f0;
+  /* Windows 95 Classic Colors */
+  --win95-bg: #008080;
+  --win95-gray: #c0c0c0;
+  --win95-dark-gray: #808080;
+  --win95-light-gray: #dfdfdf;
+  --win95-white: #ffffff;
   --win95-black: #000000;
-  --win95-blue: #000070;
-  /* Classic Win95 yellow/gold title bar - slightly muted */
-  --win95-title-yellow: #a08000;
-  --win95-title-yellow-light: #d4b000;
-  --win95-title-text: #000000;
 
-  /* Game Colors - Classic Lingo TV show palette */
-  --game-bg: #006868;
-  --tile-correct: #22aa22;
-  --tile-present: #ccaa00;
-  --tile-absent: #aa2222;
-  --tile-empty: #8b4040;
+  /* Classic Win95 blue title bar */
+  --win95-title-blue: #000080;
+  --win95-title-blue-light: #1084d0;
+  --win95-title-text: #ffffff;
 
-  /* Fonts */
-  --font-system: "Segoe UI", "MS Sans Serif", Arial, sans-serif;
+  /* Window controls */
+  --win95-close-red: #c0c0c0;
+
+  /* Game Colors - Classic OG Lingo palette */
+  --game-bg: #008080;
+  --tile-correct: #00ff00;
+  --tile-present: #ffff00;
+  --tile-input: #ff0000;
+  --tile-empty: #808080;
+
+  /* Fonts - System font for Win95 look */
+  --font-system: "MS Sans Serif", "Segoe UI", Tahoma, sans-serif;
 }
 
 html,
@@ -77,21 +80,34 @@ body {
 .title-bar {
   background: linear-gradient(
     90deg,
-    var(--win95-title-yellow),
-    var(--win95-title-yellow-light)
+    var(--win95-title-blue),
+    var(--win95-title-blue-light)
   );
-  padding: 3px 4px;
+  padding: 2px 3px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   user-select: none;
+  height: 20px;
 }
 
 .title-bar-text {
   color: var(--win95-title-text);
   font-weight: bold;
-  font-size: 13px;
+  font-size: 12px;
   padding-left: 2px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.title-bar-text::before {
+  content: "";
+  width: 14px;
+  height: 14px;
+  background: linear-gradient(135deg, #ffff00 25%, #008000 25%, #008000 50%, #ffff00 50%, #ffff00 75%, #008000 75%);
+  background-size: 4px 4px;
+  display: inline-block;
 }
 
 .title-bar-controls {
@@ -109,11 +125,12 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: bold;
   cursor: default;
   padding: 0;
   line-height: 1;
+  font-family: var(--font-system);
 }
 
 .title-bar-button:active {
@@ -121,11 +138,16 @@ body {
     var(--win95-light-gray) var(--win95-dark-gray);
 }
 
+.title-bar-button.close-button {
+  background: var(--win95-gray);
+}
+
 .minimize-icon,
 .maximize-icon,
 .close-icon {
-  font-size: 10px;
+  font-size: 9px;
   line-height: 1;
+  color: var(--win95-black);
 }
 
 .window-body {
@@ -133,9 +155,9 @@ body {
 }
 
 .window-content {
-  padding: 10px;
+  padding: 6px;
   background: var(--game-bg);
-  min-height: 400px;
+  min-height: 300px;
 }
 
 /* Menu Bar */
@@ -143,7 +165,7 @@ body {
   background: var(--win95-gray);
   border-bottom: 1px solid var(--win95-dark-gray);
   display: flex;
-  padding: 2px 0;
+  padding: 0;
 }
 
 .menu-item {
@@ -153,10 +175,16 @@ body {
 .menu-button {
   background: none;
   border: none;
-  padding: 4px 10px;
+  padding: 3px 8px;
   font-family: var(--font-system);
-  font-size: 13px;
+  font-size: 12px;
   cursor: pointer;
+  color: var(--win95-black);
+}
+
+/* Underlined hotkeys */
+.menu-button::first-letter {
+  text-decoration: underline;
 }
 
 .menu-button:hover,
@@ -325,42 +353,43 @@ body {
 
 /* Solo Game */
 .solo-game {
-  padding: 10px;
+  padding: 8px;
 }
 
 .game-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
-  padding: 8px;
-  background: var(--win95-gray);
-  border: 2px solid;
-  border-color: var(--win95-dark-gray) var(--win95-light-gray)
-    var(--win95-light-gray) var(--win95-dark-gray);
+  margin-bottom: 8px;
+  padding: 4px 8px;
+  background: transparent;
+  border: none;
 }
 
 .hearts-display {
   display: flex;
-  gap: 5px;
+  gap: 2px;
   font-size: 20px;
 }
 
 .heart.empty {
-  opacity: 0.5;
+  opacity: 0.3;
 }
 
 .score-display {
   font-weight: bold;
-  font-size: 16px;
+  font-size: 18px;
+  color: #ffff00;
+  text-shadow: 1px 1px 0 #000000;
 }
 
 .score-label {
-  margin-right: 5px;
+  display: none;
 }
 
 .score-value {
-  color: var(--win95-title-blue);
+  color: #ffff00;
+  text-shadow: 1px 1px 0 #000000;
 }
 
 /* Game Board */
@@ -388,38 +417,45 @@ body {
 .board-grid {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 15px;
-  background: #004848;
-  border: 3px solid;
-  border-color: #006060 #002828 #002828 #006060;
+  gap: 2px;
+  padding: 4px;
+  background: var(--game-bg);
 }
 
 .board-row {
   display: flex;
-  gap: 6px;
+  gap: 2px;
 }
 
-/* Tiles */
+/* Tiles - Classic OG Lingo Style */
 .tile {
-  width: 45px;
-  height: 45px;
+  width: 38px;
+  height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
+  font-size: 22px;
   font-weight: bold;
   text-transform: uppercase;
   background: var(--tile-empty);
-  color: var(--win95-white);
+  color: var(--win95-black);
   border: 2px solid;
-  border-color: #a05050 #5a2020 #5a2020 #a05050;
-  transition: transform 0.1s;
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.4);
+  border-color: var(--win95-light-gray) var(--win95-dark-gray) var(--win95-dark-gray) var(--win95-light-gray);
+  transition: none;
+  font-family: var(--font-system);
 }
 
+/* Empty tiles - gray 3D beveled */
+.tile.empty {
+  background: #808080;
+  border-color: #a0a0a0 #404040 #404040 #a0a0a0;
+}
+
+/* Filled but not submitted - RED background, white text */
 .tile.filled {
-  transform: scale(1);
+  background: var(--tile-input);
+  color: var(--win95-white);
+  border-color: #ff6060 #800000 #800000 #ff6060;
 }
 
 .tile.pop {
@@ -427,33 +463,41 @@ body {
 }
 
 .tile.active {
-  border-color: #ccaa00;
-  box-shadow: 0 0 0 2px #ccaa00;
+  border-color: #ffff00;
+  box-shadow: none;
 }
 
 .tile.revealed {
-  animation: flip 0.5s ease-out;
+  animation: flip 0.4s ease-out;
   animation-delay: var(--delay, 0ms);
 }
 
+/* Correct - BRIGHT GREEN */
 .tile.correct {
   background: var(--tile-correct);
-  color: var(--win95-white);
-  border-color: #33bb33 #116611 #116611 #33bb33;
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.3);
+  color: var(--win95-black);
+  border-color: #80ff80 #008000 #008000 #80ff80;
 }
 
+/* Present (wrong position) - YELLOW */
 .tile.present {
   background: var(--tile-present);
   color: var(--win95-black);
-  border-color: #ddbb22 #887700 #887700 #ddbb22;
+  border-color: #ffff80 #808000 #808000 #ffff80;
 }
 
+/* Absent (wrong letter) - stays gray */
 .tile.absent {
-  background: var(--tile-absent);
-  color: var(--win95-white);
-  border-color: #cc4444 #661111 #661111 #cc4444;
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.3);
+  background: #808080;
+  color: var(--win95-black);
+  border-color: #a0a0a0 #404040 #404040 #a0a0a0;
+}
+
+/* First letter revealed (not submitted yet) - show as correct/green */
+.tile.empty.revealed.filled {
+  background: var(--tile-correct);
+  color: var(--win95-black);
+  border-color: #80ff80 #008000 #008000 #80ff80;
 }
 
 .tile-letter {
@@ -573,8 +617,13 @@ body {
 }
 
 .game-controls {
-  margin-top: 15px;
+  margin-top: 10px;
   text-align: center;
+}
+
+.game-controls .win95-button {
+  font-size: 11px;
+  padding: 4px 12px;
 }
 
 /* Modals */
@@ -1430,43 +1479,50 @@ body {
 
   .win95-window {
     max-width: 100%;
-    border-width: 0;
-    box-shadow: none;
+    border-width: 2px;
+    box-shadow: 1px 1px 0 var(--win95-black);
   }
 
-  /* Simplified title bar for mobile - hide controls */
+  /* Keep Win95 title bar look on mobile */
   .title-bar {
-    padding: 6px 10px;
+    padding: 2px 3px;
+    height: 20px;
   }
 
   .title-bar-text {
-    font-size: 14px;
+    font-size: 12px;
     font-weight: bold;
   }
 
+  .title-bar-text::before {
+    width: 12px;
+    height: 12px;
+  }
+
   .title-bar-controls {
-    display: none;
+    display: flex;
   }
 
   .window-content {
-    padding: 8px;
+    padding: 4px;
     min-height: auto;
   }
 
-  /* Tiles - responsive sizing using clamp */
+  /* Tiles - OG Lingo sizing for mobile */
   .tile {
-    width: clamp(32px, 12vw, 45px);
-    height: clamp(32px, 12vw, 45px);
-    font-size: clamp(16px, 5vw, 24px);
+    width: clamp(34px, 13vw, 42px);
+    height: clamp(34px, 13vw, 42px);
+    font-size: clamp(18px, 5.5vw, 22px);
+    border-width: 2px;
   }
 
   .board-grid {
-    gap: 4px;
-    padding: 10px;
+    gap: 2px;
+    padding: 4px;
   }
 
   .board-row {
-    gap: 4px;
+    gap: 2px;
   }
 
   /* Home screen */
@@ -1518,72 +1574,68 @@ body {
 
   /* Game header */
   .game-header {
-    padding: 6px;
-    margin-bottom: 10px;
+    padding: 4px 6px;
+    margin-bottom: 6px;
   }
 
   .hearts-display {
-    font-size: 16px;
-    gap: 3px;
+    font-size: 18px;
+    gap: 2px;
   }
 
   .score-display {
-    font-size: 14px;
+    font-size: 16px;
   }
 
   /* Solo game */
   .solo-game {
-    padding: 5px;
+    padding: 4px;
   }
 
-  /* Menu bar - touch friendly */
+  /* Menu bar - touch friendly but Win95 look */
   .menu-bar {
     padding: 0;
-    border-bottom: 2px solid var(--win95-dark-gray);
-    justify-content: stretch;
+    border-bottom: 1px solid var(--win95-dark-gray);
+    justify-content: flex-start;
   }
 
   .menu-item {
-    flex: 1;
+    flex: none;
   }
 
   .menu-button {
-    padding: 10px 12px;
-    font-size: 13px;
-    width: 100%;
-    text-align: center;
-    min-height: 40px;
-    border-right: 1px solid var(--win95-dark-gray);
-  }
-
-  .menu-item:last-child .menu-button {
+    padding: 6px 10px;
+    font-size: 12px;
+    width: auto;
+    text-align: left;
+    min-height: 28px;
     border-right: none;
   }
 
   .menu-dropdown {
-    min-width: 180px;
-    left: 50%;
-    transform: translateX(-50%);
+    min-width: 160px;
+    left: 0;
+    transform: none;
   }
 
   .menu-dropdown-item {
-    padding: 12px 20px;
-    font-size: 14px;
-    min-height: 44px;
+    padding: 8px 16px;
+    font-size: 12px;
+    min-height: 36px;
     display: flex;
     align-items: center;
   }
 
   /* Buttons - touch friendly (min 44px tap target) */
   .win95-button {
-    padding: 10px 16px;
-    font-size: 14px;
-    min-height: 44px;
+    padding: 8px 14px;
+    font-size: 12px;
+    min-height: 36px;
   }
 
   .difficulty-button {
-    padding: 12px 15px;
-    min-height: 44px;
+    padding: 10px 15px;
+    min-height: 40px;
   }
 
   /* Multiplayer responsive */
@@ -1759,18 +1811,19 @@ body {
   }
 
   .tile {
-    width: clamp(28px, 14vw, 35px);
-    height: clamp(28px, 14vw, 35px);
-    font-size: clamp(14px, 4.5vw, 18px);
+    width: clamp(30px, 14vw, 36px);
+    height: clamp(30px, 14vw, 36px);
+    font-size: clamp(16px, 5vw, 20px);
+    border-width: 2px;
   }
 
   .board-grid {
-    gap: 3px;
-    padding: 8px;
+    gap: 1px;
+    padding: 3px;
   }
 
   .board-row {
-    gap: 3px;
+    gap: 1px;
   }
 
   .game-title {
