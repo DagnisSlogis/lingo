@@ -235,6 +235,7 @@ body {
   border: none;
   font-family: var(--font-system);
   font-size: 13px;
+  color: var(--win95-black);
   cursor: pointer;
 }
 
