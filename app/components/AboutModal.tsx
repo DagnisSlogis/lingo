@@ -22,7 +22,7 @@ export function AboutModal({ onClose }: AboutModalProps) {
         </div>
         <div className="window-body modal-body about-body">
           <div className="about-icon">
-            <PixelIcon name="target" size={48} />
+            <img src="/img/netatirgus.svg" alt="Lingo" className="about-logo" />
           </div>
           <h2>Lingo</h2>
           <p className="version">Versija 1.0</p>

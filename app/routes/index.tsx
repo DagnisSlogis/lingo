@@ -7,7 +7,7 @@ export const Route = createFileRoute("/")({
 function Home() {
   return (
     <div className="home-screen">
-      <h1 className="game-title">LINGO</h1>
+      <img src="/img/netatirgus.svg" alt="Lingo" className="game-logo" />
       <p className="subtitle">Latviešu vārdu spēle</p>
 
       <div className="mode-selection">
