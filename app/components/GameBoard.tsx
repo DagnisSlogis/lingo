@@ -48,11 +48,22 @@ export function GameBoard({
   const [popTile, setPopTile] = useState<{ row: number; col: number } | null>(null);
   const isComposingRef = useRef(false);
 
+  // Auto-focus when it becomes player's turn
+  useEffect(() => {
+    if (!disabled) {
+      // Small delay to ensure DOM is ready, especially on mobile
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+    }
+  }, [disabled]);
+
+  // Also focus on currentRow change (new round)
   useEffect(() => {
     if (!disabled) {
       inputRef.current?.focus();
     }
-  }, [currentRow, disabled]);
+  }, [currentRow]);
 
   // Trigger pop animation when typing
   useEffect(() => {

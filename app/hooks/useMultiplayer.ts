@@ -23,6 +23,7 @@ interface MultiplayerState {
   matchOver: boolean;
   winnerId: string | null;
   isWinner: boolean;
+  isDraw: boolean;
 }
 
 interface RoundOverInfo {
@@ -52,6 +53,9 @@ interface Match {
   player1Score: number;
   player2Score: number;
   winnerId?: string;
+  isDraw?: boolean;
+  // Word revealed when match ends
+  revealedWord?: string;
   // Rematch fields
   player1WantsRematch?: boolean;
   player2WantsRematch?: boolean;
@@ -61,6 +65,9 @@ interface Match {
   player2CurrentGuess?: string;
   // Timer sync
   turnStartedAt?: number;
+  // Track if player left
+  player1Left?: boolean;
+  player2Left?: boolean;
 }
 
 interface Player {
@@ -496,6 +503,7 @@ export function useMultiplayer(matchId: string) {
     matchOver: match?.status === "finished",
     winnerId: match?.winnerId ?? null,
     isWinner: match?.winnerId === playerId,
+    isDraw: match?.isDraw ?? false,
   };
 
   // Get opponent's current guess

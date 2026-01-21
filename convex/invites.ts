@@ -115,6 +115,41 @@ export const joinInvite = mutation({
       return { success: false, error: "Cannot join your own invite" };
     }
 
+    // Ensure both players exist in the players table
+    // Check/create host player
+    const existingHost = await ctx.db
+      .query("players")
+      .withIndex("by_player_id", (q) => q.eq("playerId", invite.hostPlayerId))
+      .first();
+
+    if (!existingHost) {
+      await ctx.db.insert("players", {
+        playerId: invite.hostPlayerId,
+        name: invite.hostPlayerName,
+        rankedRating: 1000,
+        rankedWins: 0,
+        rankedLosses: 0,
+        createdAt: Date.now(),
+      });
+    }
+
+    // Check/create joining player
+    const existingJoiner = await ctx.db
+      .query("players")
+      .withIndex("by_player_id", (q) => q.eq("playerId", args.playerId))
+      .first();
+
+    if (!existingJoiner) {
+      await ctx.db.insert("players", {
+        playerId: args.playerId,
+        name: args.playerName,
+        rankedRating: 1000,
+        rankedWins: 0,
+        rankedLosses: 0,
+        createdAt: Date.now(),
+      });
+    }
+
     // Get a random word for this match
     const words = await ctx.db
       .query("words")
@@ -134,6 +169,7 @@ export const joinInvite = mutation({
 
     // Randomly decide who goes first
     const hostGoesFirst = Math.random() < 0.5;
+    const firstRoundStarter = hostGoesFirst ? invite.hostPlayerId : args.playerId;
 
     // Create the match
     const matchId = await ctx.db.insert("matches", {
@@ -143,7 +179,8 @@ export const joinInvite = mutation({
       currentWord: word,
       currentDifficulty: invite.difficulty,
       currentRound: 1,
-      currentTurn: hostGoesFirst ? invite.hostPlayerId : args.playerId,
+      currentTurn: firstRoundStarter,
+      firstRoundStarter,
       turnStartedAt: Date.now(),
       guesses: [],
       guessResults: [],

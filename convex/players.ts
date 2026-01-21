@@ -103,8 +103,21 @@ export const updateMatchRatings = mutation({
       return { success: true, alreadyUpdated: true };
     }
 
-    if (match.status !== "finished" || !match.winnerId) {
+    if (match.status !== "finished") {
       return { success: false, error: "Match not finished" };
+    }
+
+    // Handle draw - no rating changes, just mark as processed
+    if (match.isDraw) {
+      await ctx.db.patch(args.matchId, {
+        ratingsUpdated: true,
+      });
+      return { success: true, isDraw: true, player1Change: 0, player2Change: 0 };
+    }
+
+    // For non-draw matches, winnerId is required
+    if (!match.winnerId) {
+      return { success: false, error: "Match has no winner" };
     }
 
     // Get both players

@@ -62,15 +62,24 @@ function MatchGame() {
   const rematchState = getRematchState();
 
   // Navigate to new match when rematch is created
+  // This handles both players - the one who receives rematchMatchId from subscription
+  const rematchMatchId = match?.rematchMatchId;
   useEffect(() => {
-    if (match?.rematchMatchId) {
+    if (rematchMatchId) {
       playSound("yourTurn");
-      navigate({ to: `/ranked/match/${match.rematchMatchId}` });
+      navigate({ to: `/ranked/match/${rematchMatchId}` });
     }
-  }, [match?.rematchMatchId, navigate, playSound]);
+  }, [rematchMatchId, navigate, playSound]);
 
   const handlePlayAgain = async () => {
     if (!matchId || !playerId || !requestRematchMutation) return;
+
+    // If rematch already exists (from subscription), navigate directly
+    if (rematchMatchId) {
+      playSound("yourTurn");
+      navigate({ to: `/ranked/match/${rematchMatchId}` });
+      return;
+    }
 
     try {
       setRematchRequested(true);
@@ -200,10 +209,12 @@ function MatchGame() {
       {state.matchOver && (
         <MatchOverModal
           isWinner={state.isWinner}
+          isDraw={state.isDraw}
           myScore={state.myScore}
           opponentScore={state.opponentScore}
           myName={playerName}
           opponentName={state.opponentName}
+          lastWord={match?.revealedWord}
           onPlayAgain={handlePlayAgain}
           onExit={handleExit}
           onFindNewMatch={handleFindNewMatch}

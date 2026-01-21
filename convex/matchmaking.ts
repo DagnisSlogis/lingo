@@ -56,6 +56,7 @@ export const joinQueue = mutation({
       const player1Id = waitingPlayer.playerId;
       const player2Id = args.playerId;
 
+      const firstRoundStarter = player1GoesFirst ? player1Id : player2Id;
       const matchId = await ctx.db.insert("matches", {
         player1Id,
         player2Id,
@@ -63,7 +64,8 @@ export const joinQueue = mutation({
         currentWord: word,
         currentDifficulty: randomDifficulty,
         currentRound: 1,
-        currentTurn: player1GoesFirst ? player1Id : player2Id,
+        currentTurn: firstRoundStarter,
+        firstRoundStarter,
         turnStartedAt: Date.now(),
         guesses: [],
         guessResults: [],

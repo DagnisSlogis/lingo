@@ -48,6 +48,17 @@ export const getMatch = query({
     // Return match data without exposing the current word
     // Only expose the first letter and word length
     const { currentWord, ...safeMatch } = match;
+
+    // Reveal the word when match is finished (no need to hide it anymore)
+    if (match.status === "finished") {
+      return {
+        ...safeMatch,
+        wordLength: currentWord.length,
+        firstLetter: currentWord[0],
+        revealedWord: currentWord,
+      };
+    }
+
     return {
       ...safeMatch,
       wordLength: currentWord.length,
@@ -189,9 +200,10 @@ export const submitGuess = mutation({
         newWord = words[Math.floor(Math.random() * words.length)].word;
       }
 
-      // Alternate who goes first each round
-      const roundStarter =
-        match.currentRound % 2 === 0 ? match.player2Id : match.player1Id;
+      // Alternate who goes first each round based on who started round 1
+      const firstStarter = match.firstRoundStarter || match.player1Id;
+      const secondStarter = firstStarter === match.player1Id ? match.player2Id : match.player1Id;
+      const roundStarter = match.currentRound % 2 === 0 ? firstStarter : secondStarter;
 
       await ctx.db.patch(args.matchId, {
         guesses: [],
@@ -228,12 +240,21 @@ export const submitGuess = mutation({
       // Check if match is over
       if (newPlayer1Hearts <= 0 || newPlayer2Hearts <= 0) {
         let winnerId: string | undefined;
+        let isDraw = false;
+
         if (newPlayer1Hearts <= 0 && newPlayer2Hearts <= 0) {
-          // Both at 0 - whoever had more score wins, else it's a draw (player1 wins ties)
-          winnerId =
-            match.player1Score >= match.player2Score
-              ? match.player1Id
-              : match.player2Id;
+          // Both at 0 - check if it's a draw or someone wins by score
+          if (match.player1Score === match.player2Score) {
+            // True draw - no winner
+            isDraw = true;
+            winnerId = undefined;
+          } else {
+            // Tiebreaker by score
+            winnerId =
+              match.player1Score > match.player2Score
+                ? match.player1Id
+                : match.player2Id;
+          }
         } else if (newPlayer1Hearts <= 0) {
           winnerId = match.player2Id;
         } else {
@@ -247,6 +268,7 @@ export const submitGuess = mutation({
           player2Hearts: newPlayer2Hearts,
           status: "finished",
           winnerId,
+          isDraw,
           updatedAt: Date.now(),
           player1CurrentGuess: undefined,
           player2CurrentGuess: undefined,
@@ -257,6 +279,7 @@ export const submitGuess = mutation({
           correct: false,
           matchOver: true,
           winnerId,
+          isDraw,
           bothLoseHeart: true,
         };
       }
@@ -276,8 +299,10 @@ export const submitGuess = mutation({
         newWord = words[Math.floor(Math.random() * words.length)].word;
       }
 
-      const roundStarter =
-        match.currentRound % 2 === 0 ? match.player2Id : match.player1Id;
+      // Alternate who goes first each round based on who started round 1
+      const firstStarter = match.firstRoundStarter || match.player1Id;
+      const secondStarter = firstStarter === match.player1Id ? match.player2Id : match.player1Id;
+      const roundStarter = match.currentRound % 2 === 0 ? firstStarter : secondStarter;
 
       await ctx.db.patch(args.matchId, {
         guesses: [],
@@ -392,8 +417,10 @@ export const skipTurn = mutation({
         newWord = words[Math.floor(Math.random() * words.length)].word;
       }
 
-      const roundStarter =
-        match.currentRound % 2 === 0 ? match.player2Id : match.player1Id;
+      // Alternate who goes first each round based on who started round 1
+      const firstStarter = match.firstRoundStarter || match.player1Id;
+      const secondStarter = firstStarter === match.player1Id ? match.player2Id : match.player1Id;
+      const roundStarter = match.currentRound % 2 === 0 ? firstStarter : secondStarter;
 
       await ctx.db.patch(args.matchId, {
         guesses: [],
@@ -516,8 +543,9 @@ export const requestRematch = mutation({
         word = words[Math.floor(Math.random() * words.length)].word;
       }
 
-      // Swap who goes first (opposite of original match)
-      const hostGoesFirst = Math.random() < 0.5;
+      // Swap who goes first - opposite of previous match
+      const previousStarter = match.firstRoundStarter || match.player1Id;
+      const firstRoundStarter = previousStarter === match.player1Id ? match.player2Id : match.player1Id;
 
       const newMatchId = await ctx.db.insert("matches", {
         player1Id: match.player1Id,
@@ -526,7 +554,8 @@ export const requestRematch = mutation({
         currentWord: word,
         currentDifficulty: match.currentDifficulty,
         currentRound: 1,
-        currentTurn: hostGoesFirst ? match.player1Id : match.player2Id,
+        currentTurn: firstRoundStarter,
+        firstRoundStarter,
         turnStartedAt: Date.now(),
         guesses: [],
         guessResults: [],

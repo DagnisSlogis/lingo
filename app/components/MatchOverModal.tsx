@@ -2,10 +2,12 @@ import { PixelIcon } from "./PixelIcon";
 
 interface MatchOverModalProps {
   isWinner: boolean;
+  isDraw: boolean;
   myScore: number;
   opponentScore: number;
   myName: string;
   opponentName: string;
+  lastWord?: string;
   onPlayAgain: () => void;
   onExit: () => void;
   onFindNewMatch?: () => void;
@@ -16,10 +18,12 @@ interface MatchOverModalProps {
 
 export function MatchOverModal({
   isWinner,
+  isDraw,
   myScore,
   opponentScore,
   myName,
   opponentName,
+  lastWord,
   onPlayAgain,
   onExit,
   onFindNewMatch,
@@ -44,31 +48,48 @@ export function MatchOverModal({
   const isRematchDisabled = rematchState === "waiting" || rematchState === "starting";
   const showFindNewMatch = rematchState === "opponent_left";
 
+  const getTitle = () => {
+    if (isDraw) return "Neizšķirts!";
+    return isWinner ? "Uzvara!" : "Zaudējums";
+  };
+
+  const getResultText = () => {
+    if (isDraw) return "Neizšķirts!";
+    return isWinner ? "Tu uzvarēji!" : "Tu zaudēji!";
+  };
+
   return (
     <div className="modal-overlay">
       <div className="modal win95-window match-over-modal">
         <div className="title-bar">
           <div className="title-bar-text">
-            {isWinner ? "Uzvara!" : "Zaudējums"}
+            {getTitle()}
           </div>
         </div>
         <div className="window-body">
           <div className="match-result-icon">
-            {isWinner && (
+            {isWinner && !isDraw && (
               <img src="/img/trophy.svg" alt="duel" width={48} height={48} />
             )}
           </div>
 
           <div className="match-result-title">
-            {isWinner ? "Tu uzvarēji!" : "Tu zaudēji!"}
+            {getResultText()}
           </div>
 
+          {lastWord && (
+            <div className="match-last-word">
+              <span className="last-word-label">Vārds:</span>
+              <span className="last-word-value">{lastWord.toUpperCase()}</span>
+            </div>
+          )}
+
           <div className="match-scores">
-            <div className={`score-row ${isWinner ? "winner" : ""}`}>
+            <div className={`score-row ${isWinner && !isDraw ? "winner" : ""}`}>
               <span className="score-name">{myName}</span>
               <span className="score-value">{myScore}</span>
             </div>
-            <div className={`score-row ${!isWinner ? "winner" : ""}`}>
+            <div className={`score-row ${!isWinner && !isDraw ? "winner" : ""}`}>
               <span className="score-name">{opponentName}</span>
               <span className="score-value">{opponentScore}</span>
             </div>

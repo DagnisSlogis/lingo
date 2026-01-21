@@ -57,6 +57,7 @@ export default defineSchema({
     player1Score: v.number(),
     player2Score: v.number(),
     winnerId: v.optional(v.string()),
+    isDraw: v.optional(v.boolean()),
     createdAt: v.number(),
     updatedAt: v.number(),
     // Rematch tracking
@@ -70,6 +71,8 @@ export default defineSchema({
     player2CurrentGuess: v.optional(v.string()),
     // Timer sync - timestamp when current turn started
     turnStartedAt: v.optional(v.number()),
+    // Track who started the first round (for proper alternation)
+    firstRoundStarter: v.optional(v.string()),
     // Track if player left the match (for rematch flow)
     player1Left: v.optional(v.boolean()),
     player2Left: v.optional(v.boolean()),

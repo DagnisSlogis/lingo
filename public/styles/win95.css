@@ -1541,6 +1541,29 @@ body {
   margin-bottom: 20px;
 }
 
+.match-last-word {
+  text-align: center;
+  margin-bottom: 20px;
+  padding: 10px;
+  background: var(--win95-white);
+  border: 2px solid;
+  border-color: var(--win95-dark-gray) var(--win95-light-gray)
+    var(--win95-light-gray) var(--win95-dark-gray);
+}
+
+.last-word-label {
+  font-size: 12px;
+  color: var(--win95-dark-gray);
+  margin-right: 8px;
+}
+
+.last-word-value {
+  font-size: 18px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  color: #000;
+}
+
 .match-scores {
   background: var(--win95-white);
   border: 2px solid;
