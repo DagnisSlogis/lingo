@@ -33,7 +33,8 @@ export function StatusBar() {
         {playerName}
       </div>
       <div className="status-panel status-streak">
-        🔥 {streakInfo?.dailyStreak ?? 0}
+        <img src="/img/flame.svg" alt="streak" className="status-icon" />
+        {streakInfo?.dailyStreak ?? 0}
       </div>
       <div className="status-panel status-rank">
         #{rankedStats?.rank ?? "—"}

@@ -143,7 +143,9 @@ export function StatsModal({ onClose, playerId }: StatsModalProps) {
                   <span className="stat-label">Dienas sērija</span>
                   <span className="stat-value streak-display">
                     {playerData?.dailyStreak ?? 0}
-                    {(playerData?.dailyStreak ?? 0) > 0 && " 🔥"}
+                    {(playerData?.dailyStreak ?? 0) > 0 && (
+                      <img src="/img/flame.svg" alt="streak" className="streak-icon" />
+                    )}
                   </span>
                 </div>
                 <div className="stat-item">

@@ -55,19 +55,16 @@ function RankedQueue() {
 
       <div className="ranked-info">
         <div className="info-item">
-          <span className="info-icon">⚔️</span>
+          <img src="/img/duel.svg" alt="duel" className="info-icon" />
           <span className="info-text">Divi spēlētāji min vārdu uz vienas galdiņa</span>
         </div>
         <div className="info-item">
-          <span className="info-icon">⏱️</span>
           <span className="info-text">30 sekundes katram gājienam</span>
         </div>
         <div className="info-item">
-          <span className="info-icon">❤️</span>
           <span className="info-text">3 dzīvības - pirmais, kas zaudē visas, zaudē maču</span>
         </div>
         <div className="info-item">
-          <span className="info-icon">📊</span>
           <span className="info-text">Uzvaras un zaudējumi ietekmē tavu reitingu</span>
         </div>
       </div>
