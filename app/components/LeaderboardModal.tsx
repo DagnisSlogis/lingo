@@ -9,9 +9,9 @@ interface LeaderboardModalProps {
 type Difficulty = "easy" | "medium" | "hard";
 
 const difficultyLabels: Record<Difficulty, string> = {
-  easy: "Viegls (5 burti)",
-  medium: "Vidējs (7 burti)",
-  hard: "Grūts (9 burti)",
+  easy: "Viegls (4 burti)",
+  medium: "Klasiskais (5 burti)",
+  hard: "Grūts (6 burti)",
 };
 
 export function LeaderboardModal({ onClose }: LeaderboardModalProps) {

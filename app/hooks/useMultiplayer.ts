@@ -3,7 +3,6 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import type { BoardRow, RowAnimation } from "~/components/GameBoard";
 import type { TileState } from "~/components/Tile";
-import { validateGuess, isWinningGuess } from "~/lib/wordValidator";
 import { generatePlayerName, generatePlayerId } from "~/lib/nameGenerator";
 import { useSound } from "./useSound";
 
@@ -36,16 +35,26 @@ interface Match {
   player1Id: string;
   player2Id: string;
   status: string;
-  currentWord: string;
+  // Word is hidden from client - only get length and first letter
+  wordLength: number;
+  firstLetter: string;
   currentDifficulty: string;
   currentRound: number;
   currentTurn: string;
   guesses: string[];
+  // Server-calculated tile states for each guess
+  guessResults?: string[][];
+  // Previous round's word (revealed after round ends)
+  previousRoundWord?: string;
   player1Hearts: number;
   player2Hearts: number;
   player1Score: number;
   player2Score: number;
   winnerId?: string;
+  // Rematch fields
+  player1WantsRematch?: boolean;
+  player2WantsRematch?: boolean;
+  rematchMatchId?: string;
 }
 
 interface Player {
@@ -98,11 +107,20 @@ export function useMultiplayer(matchId: string) {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const previousTurnRef = useRef<string | null>(null);
   const previousRoundRef = useRef<number | null>(null);
-  const previousWordRef = useRef<string | null>(null);
   const previousHeartsRef = useRef<{ p1: number; p2: number } | null>(null);
+  const ratingUpdatedRef = useRef(false);
+
+  // Reset rating updated flag when matchId changes (e.g., rematch)
+  useEffect(() => {
+    ratingUpdatedRef.current = false;
+  }, [matchId]);
 
   // Real-time match subscription - use type assertion for new API
-  const match = useQuery((api as any).matches?.getMatch, { matchId }) as Match | undefined | null;
+  // Skip query if matchId is empty to avoid validation errors
+  const match = useQuery(
+    (api as any).matches?.getMatch,
+    matchId ? { matchId } : "skip"
+  ) as Match | undefined | null;
 
   // Get opponent info
   const opponentId = match
@@ -125,55 +143,62 @@ export function useMultiplayer(matchId: string) {
   // Determine player position
   const isPlayer1 = match?.player1Id === playerId;
 
-  // Build board from match guesses
-  const wordLength = match?.currentWord?.length ?? 5;
+  // Build board from match guesses - use server-provided word length
+  const wordLength = match?.wordLength ?? 5;
   const [board, setBoard] = useState<BoardRow[]>(() =>
     createEmptyBoard(wordLength)
   );
 
-  // Update board when match changes
+  // Update board when match data changes
+  const matchWordLength = match?.wordLength;
+  const matchGuesses = match?.guesses;
+  const matchGuessResults = match?.guessResults;
+  const matchFirstLetter = match?.firstLetter;
+
   useEffect(() => {
-    if (!match) return;
+    if (!matchWordLength || !matchGuesses || !matchFirstLetter) return;
 
-    const newWordLength = match.currentWord.length;
-    const newBoard = createEmptyBoard(newWordLength);
+    const newBoard = createEmptyBoard(matchWordLength);
 
-    // Fill in guesses
-    match.guesses.forEach((guess: string, index: number) => {
+    // Fill in guesses using server-provided tile states
+    matchGuesses.forEach((guess: string, index: number) => {
+      // Get server-calculated tile states for this guess
+      const serverStates = matchGuessResults?.[index];
+
       if (guess === "") {
         // Skipped turn - show empty row
         newBoard[index] = {
-          letters: Array(newWordLength).fill(""),
-          states: Array(newWordLength).fill("absent") as TileState[],
+          letters: Array(matchWordLength).fill(""),
+          states: serverStates as TileState[] || Array(matchWordLength).fill("absent") as TileState[],
           submitted: true,
         };
       } else {
-        const states = validateGuess(guess, match.currentWord);
+        // Use server-provided states instead of calculating client-side
         newBoard[index] = {
           letters: guess.split(""),
-          states,
+          states: serverStates as TileState[] || Array(matchWordLength).fill("absent") as TileState[],
           submitted: true,
         };
       }
     });
 
     // Show first letter in current row if it's available
-    const currentRowIndex = match.guesses.length;
-    if (currentRowIndex < MAX_ROWS && match.currentWord) {
+    const currentRowIndex = matchGuesses.length;
+    if (currentRowIndex < MAX_ROWS && matchFirstLetter) {
       newBoard[currentRowIndex] = {
         ...newBoard[currentRowIndex],
-        letters: [match.currentWord[0], ...Array(newWordLength - 1).fill("")],
+        letters: [matchFirstLetter, ...Array(matchWordLength - 1).fill("")],
       };
     }
 
     setBoard(newBoard);
 
     // Reset guess when new guesses are added
-    if (match.guesses.length !== lastProcessedGuessCount) {
-      setLastProcessedGuessCount(match.guesses.length);
-      setCurrentGuess(match.currentWord[0]);
+    if (matchGuesses.length !== lastProcessedGuessCount) {
+      setLastProcessedGuessCount(matchGuesses.length);
+      setCurrentGuess(matchFirstLetter);
     }
-  }, [match, lastProcessedGuessCount]);
+  }, [matchWordLength, matchGuesses, matchGuessResults, matchFirstLetter, lastProcessedGuessCount]);
 
   // Helper for triggering animations
   const triggerRowAnimation = useCallback((row: number, type: RowAnimation) => {
@@ -193,8 +218,9 @@ export function useMultiplayer(matchId: string) {
       const lastGuessRow = guessCount - 1;
 
       if (lastGuess && lastGuess !== "") {
-        const states = validateGuess(lastGuess, match.currentWord);
-        const isWin = isWinningGuess(states);
+        // Use server-provided states to check for win
+        const states = match.guessResults?.[lastGuessRow];
+        const isWin = states?.every((state) => state === "correct") ?? false;
 
         if (isWin) {
           triggerRowAnimation(lastGuessRow, "bounce");
@@ -214,19 +240,33 @@ export function useMultiplayer(matchId: string) {
         }
       }
     }
-  }, [match?.guesses.length, lastProcessedGuessCount, match?.currentWord, playSound, triggerRowAnimation, match?.guesses, playerId]);
+  }, [match?.guesses.length, lastProcessedGuessCount, match?.guessResults, playSound, triggerRowAnimation, match?.guesses, playerId]);
+
+  // Store refs for timer callback to avoid stale closures
+  const matchIdRef = useRef(matchId);
+  const playerIdRef = useRef(playerId);
+  const skipTurnMutationRef = useRef(skipTurnMutation);
+
+  useEffect(() => {
+    matchIdRef.current = matchId;
+    playerIdRef.current = playerId;
+    skipTurnMutationRef.current = skipTurnMutation;
+  }, [matchId, playerId, skipTurnMutation]);
 
   // Timer management
-  useEffect(() => {
-    if (!match || match.status !== "active") return;
+  const currentTurn = match?.currentTurn;
+  const matchStatus = match?.status;
 
-    const isMyTurn = match.currentTurn === playerId;
+  useEffect(() => {
+    if (!matchStatus || matchStatus !== "active") return;
+
+    const isMyTurn = currentTurn === playerId;
 
     // Play sound when it becomes your turn
     if (isMyTurn && previousTurnRef.current !== null && previousTurnRef.current !== playerId) {
       playSound("yourTurn");
     }
-    previousTurnRef.current = match.currentTurn;
+    previousTurnRef.current = currentTurn ?? null;
 
     // Reset timer when it becomes your turn
     if (isMyTurn) {
@@ -237,8 +277,11 @@ export function useMultiplayer(matchId: string) {
           if (prev <= 1) {
             // Time's up - skip turn
             if (timerRef.current) clearInterval(timerRef.current);
-            if (skipTurnMutation) {
-              skipTurnMutation({ matchId, playerId });
+            if (skipTurnMutationRef.current) {
+              skipTurnMutationRef.current({
+                matchId: matchIdRef.current,
+                playerId: playerIdRef.current
+              });
             }
             return 0;
           }
@@ -260,27 +303,30 @@ export function useMultiplayer(matchId: string) {
         timerRef.current = null;
       }
     };
-  }, [match?.currentTurn, match?.status, playerId, matchId, skipTurnMutation, playSound]);
+  }, [currentTurn, matchStatus, playerId, playSound]);
 
   // Track round transitions and show word reveal
-  useEffect(() => {
-    if (!match) return;
+  const matchCurrentRound = match?.currentRound;
+  const matchPreviousRoundWord = match?.previousRoundWord;
+  const matchPlayer1Hearts = match?.player1Hearts;
+  const matchPlayer2Hearts = match?.player2Hearts;
 
-    const currentRound = match.currentRound;
-    const currentWord = match.currentWord;
-    const currentP1Hearts = match.player1Hearts;
-    const currentP2Hearts = match.player2Hearts;
+  useEffect(() => {
+    if (matchCurrentRound === undefined || matchPlayer1Hearts === undefined || matchPlayer2Hearts === undefined) return;
+
+    const currentRound = matchCurrentRound;
+    const currentP1Hearts = matchPlayer1Hearts;
+    const currentP2Hearts = matchPlayer2Hearts;
 
     // Initialize refs on first load
     if (previousRoundRef.current === null) {
       previousRoundRef.current = currentRound;
-      previousWordRef.current = currentWord;
       previousHeartsRef.current = { p1: currentP1Hearts, p2: currentP2Hearts };
       return;
     }
 
     // Detect round change
-    if (currentRound > previousRoundRef.current && previousWordRef.current) {
+    if (currentRound > previousRoundRef.current) {
       const prevP1Hearts = previousHeartsRef.current?.p1 ?? 3;
       const prevP2Hearts = previousHeartsRef.current?.p2 ?? 3;
 
@@ -303,9 +349,9 @@ export function useMultiplayer(matchId: string) {
         roundWinner = "draw";
       }
 
-      // Show round over modal
+      // Show round over modal - word is revealed via previousRoundWord from server
       setRoundOverInfo({
-        word: previousWordRef.current,
+        word: matchPreviousRoundWord || "???",
         roundNumber: previousRoundRef.current,
         roundWinner,
       });
@@ -318,13 +364,14 @@ export function useMultiplayer(matchId: string) {
 
     // Update refs
     previousRoundRef.current = currentRound;
-    previousWordRef.current = currentWord;
     previousHeartsRef.current = { p1: currentP1Hearts, p2: currentP2Hearts };
-  }, [match?.currentRound, match?.currentWord, match?.player1Hearts, match?.player2Hearts, isPlayer1, match]);
+  }, [matchCurrentRound, matchPreviousRoundWord, matchPlayer1Hearts, matchPlayer2Hearts, isPlayer1]);
 
-  // Handle match completion - update ratings
+  // Handle match completion - update ratings (only once)
+  const opponentRating = opponent?.rankedRating;
   useEffect(() => {
-    if (match?.status === "finished" && match.winnerId && opponent) {
+    if (match?.status === "finished" && match.winnerId && opponentRating !== undefined && !ratingUpdatedRef.current) {
+      ratingUpdatedRef.current = true;
       const didWin = match.winnerId === playerId;
 
       // Update both players' ratings
@@ -332,7 +379,7 @@ export function useMultiplayer(matchId: string) {
         updateRatingMutation({
           playerId,
           won: didWin,
-          opponentRating: opponent.rankedRating,
+          opponentRating,
         });
       }
 
@@ -345,7 +392,7 @@ export function useMultiplayer(matchId: string) {
     match?.status,
     match?.winnerId,
     playerId,
-    opponent,
+    opponentRating,
     updateRatingMutation,
     clearMatchmakingMutation,
   ]);
@@ -359,7 +406,7 @@ export function useMultiplayer(matchId: string) {
       playSound("letterPlaced");
       lastTypedIndex.current = currentGuess.length;
 
-      const firstLetter = match.currentWord[0];
+      const firstLetter = match.firstLetter;
 
       if (currentGuess.length === 0 && key.toLowerCase() !== firstLetter.toLowerCase()) {
         setCurrentGuess(firstLetter + key);
@@ -385,7 +432,7 @@ export function useMultiplayer(matchId: string) {
     if (match.currentTurn !== playerId) return;
 
     let guess = currentGuess;
-    const firstLetter = match.currentWord[0];
+    const firstLetter = match.firstLetter;
 
     // Ensure guess starts with first letter
     if (!guess.startsWith(firstLetter.toLowerCase())) {
@@ -409,7 +456,7 @@ export function useMultiplayer(matchId: string) {
       }
 
       // Reset guess for next turn
-      setCurrentGuess(match.currentWord[0]);
+      setCurrentGuess(match.firstLetter);
     } catch (error) {
       console.error("Failed to submit guess:", error);
     }
@@ -446,7 +493,7 @@ export function useMultiplayer(matchId: string) {
     playerName,
     match,
     board,
-    currentGuess: currentGuess || (match?.currentWord ? match.currentWord[0] : ""),
+    currentGuess: currentGuess || (match?.firstLetter || ""),
     wordLength,
     currentRow: match?.guesses.length ?? 0,
     state,

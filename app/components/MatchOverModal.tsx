@@ -8,6 +8,9 @@ interface MatchOverModalProps {
   opponentName: string;
   onPlayAgain: () => void;
   onExit: () => void;
+  // Rematch state
+  rematchState?: "idle" | "waiting" | "opponent_waiting" | "starting";
+  onCancelRematch?: () => void;
 }
 
 export function MatchOverModal({
@@ -18,7 +21,24 @@ export function MatchOverModal({
   opponentName,
   onPlayAgain,
   onExit,
+  rematchState = "idle",
+  onCancelRematch,
 }: MatchOverModalProps) {
+  const getRematchButtonText = () => {
+    switch (rematchState) {
+      case "waiting":
+        return "Gaida pretinieku...";
+      case "opponent_waiting":
+        return "Pieņemt revanšu!";
+      case "starting":
+        return "Sākas...";
+      default:
+        return "Spēlēt vēlreiz";
+    }
+  };
+
+  const isRematchDisabled = rematchState === "waiting" || rematchState === "starting";
+
   return (
     <div className="modal-overlay">
       <div className="modal win95-window match-over-modal">
@@ -47,13 +67,35 @@ export function MatchOverModal({
             </div>
           </div>
 
+          {rematchState === "opponent_waiting" && (
+            <div className="rematch-notice">
+              {opponentName} vēlas revanšu!
+            </div>
+          )}
+
+          {rematchState === "waiting" && (
+            <div className="rematch-waiting">
+              <span className="waiting-dots">...</span>
+            </div>
+          )}
+
           <div className="modal-buttons">
-            <button className="win95-button" onClick={onPlayAgain}>
-              Spēlēt vēlreiz
+            <button
+              className={`win95-button ${rematchState === "opponent_waiting" ? "rematch-accept" : ""}`}
+              onClick={onPlayAgain}
+              disabled={isRematchDisabled}
+            >
+              {getRematchButtonText()}
             </button>
-            <button className="win95-button" onClick={onExit}>
-              Iziet
-            </button>
+            {rematchState === "waiting" && onCancelRematch ? (
+              <button className="win95-button" onClick={onCancelRematch}>
+                Atcelt
+              </button>
+            ) : (
+              <button className="win95-button" onClick={onExit}>
+                Iziet
+              </button>
+            )}
           </div>
         </div>
       </div>

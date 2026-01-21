@@ -65,6 +65,7 @@ export const joinQueue = mutation({
         currentRound: 1,
         currentTurn: player1GoesFirst ? player1Id : player2Id,
         guesses: [],
+        guessResults: [],
         player1Hearts: 3,
         player2Hearts: 3,
         player1Score: 0,

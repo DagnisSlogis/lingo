@@ -1,13 +1,58 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 
-// Get match by ID
+// Helper function to validate a guess against the target word
+// Returns tile states: "correct" | "present" | "absent"
+function validateGuess(guess: string, target: string): string[] {
+  const guessArray = guess.toLowerCase().split("");
+  const targetArray = target.toLowerCase().split("");
+  const result: string[] = new Array(guessArray.length).fill("absent");
+
+  // Track which letters in target have been matched
+  const targetLetterCounts: Record<string, number> = {};
+  for (const letter of targetArray) {
+    targetLetterCounts[letter] = (targetLetterCounts[letter] || 0) + 1;
+  }
+
+  // First pass: mark correct positions (green)
+  for (let i = 0; i < guessArray.length; i++) {
+    if (guessArray[i] === targetArray[i]) {
+      result[i] = "correct";
+      targetLetterCounts[guessArray[i]]--;
+    }
+  }
+
+  // Second pass: mark present letters (yellow)
+  for (let i = 0; i < guessArray.length; i++) {
+    if (result[i] === "correct") continue;
+
+    const letter = guessArray[i];
+    if (targetLetterCounts[letter] && targetLetterCounts[letter] > 0) {
+      result[i] = "present";
+      targetLetterCounts[letter]--;
+    }
+  }
+
+  return result;
+}
+
+// Get match by ID - returns sanitized match data without the actual word
 export const getMatch = query({
   args: {
     matchId: v.id("matches"),
   },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.matchId);
+    const match = await ctx.db.get(args.matchId);
+    if (!match) return null;
+
+    // Return match data without exposing the current word
+    // Only expose the first letter and word length
+    const { currentWord, ...safeMatch } = match;
+    return {
+      ...safeMatch,
+      wordLength: currentWord.length,
+      firstLetter: currentWord[0],
+    };
   },
 });
 
@@ -63,9 +108,14 @@ export const submitGuess = mutation({
     const opponentId = isPlayer1 ? match.player2Id : match.player1Id;
 
     // Add guess to the list
-    const newGuesses = [...match.guesses, args.guess.toLowerCase()];
-    const isCorrect =
-      args.guess.toLowerCase() === match.currentWord.toLowerCase();
+    const guessLower = args.guess.toLowerCase();
+    const newGuesses = [...match.guesses, guessLower];
+
+    // Calculate tile states for this guess
+    const tileStates = validateGuess(guessLower, match.currentWord);
+    const newGuessResults = [...(match.guessResults || []), tileStates];
+
+    const isCorrect = guessLower === match.currentWord.toLowerCase();
 
     // Calculate points based on attempt number (1-6)
     const attemptNumber = newGuesses.length;
@@ -104,6 +154,7 @@ export const submitGuess = mutation({
 
         await ctx.db.patch(args.matchId, {
           guesses: newGuesses,
+          guessResults: newGuessResults,
           player1Hearts: newPlayer1Hearts,
           player2Hearts: newPlayer2Hearts,
           player1Score: newPlayer1Score,
@@ -142,6 +193,8 @@ export const submitGuess = mutation({
 
       await ctx.db.patch(args.matchId, {
         guesses: [],
+        guessResults: [],
+        previousRoundWord: match.currentWord,
         currentWord: newWord,
         currentDifficulty: randomDifficulty,
         currentRound: match.currentRound + 1,
@@ -184,6 +237,7 @@ export const submitGuess = mutation({
 
         await ctx.db.patch(args.matchId, {
           guesses: newGuesses,
+          guessResults: newGuessResults,
           player1Hearts: newPlayer1Hearts,
           player2Hearts: newPlayer2Hearts,
           status: "finished",
@@ -220,6 +274,8 @@ export const submitGuess = mutation({
 
       await ctx.db.patch(args.matchId, {
         guesses: [],
+        guessResults: [],
+        previousRoundWord: match.currentWord,
         currentWord: newWord,
         currentDifficulty: randomDifficulty,
         currentRound: match.currentRound + 1,
@@ -240,6 +296,7 @@ export const submitGuess = mutation({
     // Continue game - switch turns
     await ctx.db.patch(args.matchId, {
       guesses: newGuesses,
+      guessResults: newGuessResults,
       currentTurn: opponentId,
       updatedAt: Date.now(),
     });
@@ -271,8 +328,11 @@ export const skipTurn = mutation({
     const isPlayer1 = match.player1Id === args.playerId;
     const opponentId = isPlayer1 ? match.player2Id : match.player1Id;
 
-    // Count as a wasted guess
+    // Count as a wasted guess - empty string with all absent states
     const newGuesses = [...match.guesses, ""];
+    const wordLength = match.currentWord.length;
+    const emptyTileStates = new Array(wordLength).fill("absent");
+    const newGuessResults = [...(match.guessResults || []), emptyTileStates];
 
     if (newGuesses.length >= 6) {
       // Both lose a heart
@@ -294,6 +354,7 @@ export const skipTurn = mutation({
 
         await ctx.db.patch(args.matchId, {
           guesses: newGuesses,
+          guessResults: newGuessResults,
           player1Hearts: newPlayer1Hearts,
           player2Hearts: newPlayer2Hearts,
           status: "finished",
@@ -324,6 +385,8 @@ export const skipTurn = mutation({
 
       await ctx.db.patch(args.matchId, {
         guesses: [],
+        guessResults: [],
+        previousRoundWord: match.currentWord,
         currentWord: newWord,
         currentDifficulty: randomDifficulty,
         currentRound: match.currentRound + 1,
@@ -339,6 +402,7 @@ export const skipTurn = mutation({
     // Just switch turns
     await ctx.db.patch(args.matchId, {
       guesses: newGuesses,
+      guessResults: newGuessResults,
       currentTurn: opponentId,
       updatedAt: Date.now(),
     });
@@ -370,6 +434,125 @@ export const forfeitMatch = mutation({
     });
 
     return { success: true, winnerId };
+  },
+});
+
+// Request a rematch
+export const requestRematch = mutation({
+  args: {
+    matchId: v.id("matches"),
+    playerId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const match = await ctx.db.get(args.matchId);
+
+    if (!match) {
+      return { success: false, error: "Match not found" };
+    }
+
+    if (match.status !== "finished") {
+      return { success: false, error: "Match is not finished" };
+    }
+
+    // Already has a rematch match created
+    if (match.rematchMatchId) {
+      return { success: true, rematchMatchId: match.rematchMatchId };
+    }
+
+    const isPlayer1 = match.player1Id === args.playerId;
+    const isPlayer2 = match.player2Id === args.playerId;
+
+    if (!isPlayer1 && !isPlayer2) {
+      return { success: false, error: "Not a player in this match" };
+    }
+
+    // Update rematch request
+    if (isPlayer1) {
+      await ctx.db.patch(args.matchId, { player1WantsRematch: true });
+    } else {
+      await ctx.db.patch(args.matchId, { player2WantsRematch: true });
+    }
+
+    // Check if both players want rematch
+    const updatedMatch = await ctx.db.get(args.matchId);
+    const p1Wants = isPlayer1 ? true : updatedMatch?.player1WantsRematch;
+    const p2Wants = isPlayer2 ? true : updatedMatch?.player2WantsRematch;
+
+    if (p1Wants && p2Wants) {
+      // Both want rematch - create new match
+      const words = await ctx.db
+        .query("words")
+        .withIndex("by_difficulty", (q) => q.eq("difficulty", match.currentDifficulty))
+        .collect();
+
+      const fallbackWords: Record<string, string> = {
+        easy: "māja",
+        medium: "vārds",
+        hard: "draugs",
+      };
+      let word = fallbackWords[match.currentDifficulty] || "vārds";
+      if (words.length > 0) {
+        word = words[Math.floor(Math.random() * words.length)].word;
+      }
+
+      // Swap who goes first (opposite of original match)
+      const hostGoesFirst = Math.random() < 0.5;
+
+      const newMatchId = await ctx.db.insert("matches", {
+        player1Id: match.player1Id,
+        player2Id: match.player2Id,
+        status: "active",
+        currentWord: word,
+        currentDifficulty: match.currentDifficulty,
+        currentRound: 1,
+        currentTurn: hostGoesFirst ? match.player1Id : match.player2Id,
+        guesses: [],
+        guessResults: [],
+        player1Hearts: 3,
+        player2Hearts: 3,
+        player1Score: 0,
+        player2Score: 0,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      });
+
+      // Update original match with rematch ID
+      await ctx.db.patch(args.matchId, { rematchMatchId: newMatchId });
+
+      return { success: true, rematchMatchId: newMatchId, rematchStarted: true };
+    }
+
+    return { success: true, waiting: true };
+  },
+});
+
+// Cancel rematch request
+export const cancelRematch = mutation({
+  args: {
+    matchId: v.id("matches"),
+    playerId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const match = await ctx.db.get(args.matchId);
+
+    if (!match) {
+      return { success: false, error: "Match not found" };
+    }
+
+    const isPlayer1 = match.player1Id === args.playerId;
+    const isPlayer2 = match.player2Id === args.playerId;
+
+    if (!isPlayer1 && !isPlayer2) {
+      return { success: false, error: "Not a player in this match" };
+    }
+
+    if (isPlayer1) {
+      await ctx.db.patch(args.matchId, { player1WantsRematch: false });
+    } else {
+      await ctx.db.patch(args.matchId, { player2WantsRematch: false });
+    }
+
+    return { success: true };
   },
 });
 

@@ -48,6 +48,10 @@ export default defineSchema({
     currentRound: v.number(),
     currentTurn: v.string(),
     guesses: v.array(v.string()),
+    // Store tile states for each guess (array of arrays: ["correct", "present", "absent", ...])
+    guessResults: v.optional(v.array(v.array(v.string()))),
+    // Previous round's word (revealed after round ends for display)
+    previousRoundWord: v.optional(v.string()),
     player1Hearts: v.number(),
     player2Hearts: v.number(),
     player1Score: v.number(),
@@ -55,6 +59,10 @@ export default defineSchema({
     winnerId: v.optional(v.string()),
     createdAt: v.number(),
     updatedAt: v.number(),
+    // Rematch tracking
+    player1WantsRematch: v.optional(v.boolean()),
+    player2WantsRematch: v.optional(v.boolean()),
+    rematchMatchId: v.optional(v.id("matches")),
   })
     .index("by_status", ["status"])
     .index("by_player", ["player1Id"])
