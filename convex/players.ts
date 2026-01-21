@@ -233,12 +233,13 @@ function getUtcDayStart(timestamp: number): number {
   return date.getTime();
 }
 
-// Record a game win and update streak
-export const recordGameWin = mutation({
+// Record a game played and update streak (tracks daily engagement, not just wins)
+export const recordGamePlayed = mutation({
   args: {
     playerId: v.string(),
     playerName: v.string(),
     difficulty: v.string(),
+    won: v.boolean(),
   },
   handler: async (ctx, args) => {
     let player = await ctx.db
@@ -251,6 +252,74 @@ export const recordGameWin = mutation({
 
     if (!player) {
       // Create new player with initial streak
+      const id = await ctx.db.insert("players", {
+        playerId: args.playerId,
+        name: args.playerName,
+        rankedRating: 1000,
+        rankedWins: 0,
+        rankedLosses: 0,
+        createdAt: now,
+        dailyStreak: 1,
+        lastPlayedAt: now,
+        longestStreak: 1,
+        totalGamesPlayed: 1,
+        totalWins: args.won ? 1 : 0,
+        lastDifficulty: args.difficulty,
+      });
+      return await ctx.db.get(id);
+    }
+
+    const lastPlayedDayStart = player.lastPlayedAt
+      ? getUtcDayStart(player.lastPlayedAt)
+      : 0;
+
+    let newStreak = player.dailyStreak ?? 0;
+    const yesterdayStart = todayStart - 24 * 60 * 60 * 1000;
+
+    // Calculate streak
+    if (lastPlayedDayStart === todayStart) {
+      // Already played today - streak stays the same
+    } else if (lastPlayedDayStart === yesterdayStart) {
+      // Played yesterday - increment streak
+      newStreak++;
+    } else {
+      // Missed a day - reset streak to 1
+      newStreak = 1;
+    }
+
+    const newLongestStreak = Math.max(player.longestStreak ?? 0, newStreak);
+
+    await ctx.db.patch(player._id, {
+      dailyStreak: newStreak,
+      lastPlayedAt: now,
+      longestStreak: newLongestStreak,
+      totalGamesPlayed: (player.totalGamesPlayed ?? 0) + 1,
+      totalWins: (player.totalWins ?? 0) + (args.won ? 1 : 0),
+      lastDifficulty: args.difficulty,
+    });
+
+    return await ctx.db.get(player._id);
+  },
+});
+
+// Backwards compatibility alias
+export const recordGameWin = mutation({
+  args: {
+    playerId: v.string(),
+    playerName: v.string(),
+    difficulty: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // Call the new function with won: true
+    let player = await ctx.db
+      .query("players")
+      .withIndex("by_player_id", (q) => q.eq("playerId", args.playerId))
+      .first();
+
+    const now = Date.now();
+    const todayStart = getUtcDayStart(now);
+
+    if (!player) {
       const id = await ctx.db.insert("players", {
         playerId: args.playerId,
         name: args.playerName,
@@ -275,14 +344,11 @@ export const recordGameWin = mutation({
     let newStreak = player.dailyStreak ?? 0;
     const yesterdayStart = todayStart - 24 * 60 * 60 * 1000;
 
-    // Calculate streak
     if (lastPlayedDayStart === todayStart) {
-      // Already played today - streak stays the same
+      // Already played today
     } else if (lastPlayedDayStart === yesterdayStart) {
-      // Played yesterday - increment streak
       newStreak++;
     } else {
-      // Missed a day - reset streak to 1
       newStreak = 1;
     }
 

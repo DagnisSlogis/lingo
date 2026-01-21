@@ -30,7 +30,7 @@ export function useGame(difficulty: Difficulty) {
   const wordLength = WORD_LENGTHS[difficulty];
   const getRandomWord = useMutation(api.words.getRandomWord);
   const submitScore = useMutation(api.leaderboard.submitScore);
-  const recordGameWin = useMutation(api.players.recordGameWin);
+  const recordGamePlayed = useMutation(api.players.recordGamePlayed);
   const { play: playSound } = useSound();
 
   const [targetWord, setTargetWord] = useState<string>("");
@@ -152,12 +152,13 @@ export function useGame(difficulty: Difficulty) {
       // Bounce animation and win sound
       triggerRowAnimation(currentRow, "bounce");
       playSound("win");
-      // Record win for streak tracking
-      recordGameWin({
+      // Record game for streak tracking
+      recordGamePlayed({
         playerId,
         playerName,
         difficulty,
-      }).catch((err) => console.error("Failed to record win:", err));
+        won: true,
+      }).catch((err) => console.error("Failed to record game:", err));
     } else if (currentRow >= MAX_ROWS - 1) {
       // Lost this round - shake animation
       triggerRowAnimation(currentRow, "shake");
@@ -166,6 +167,13 @@ export function useGame(difficulty: Difficulty) {
       setHearts(newHearts);
       setWon(false);
       setGameOver(true);
+      // Record game for streak tracking (even on loss)
+      recordGamePlayed({
+        playerId,
+        playerName,
+        difficulty,
+        won: false,
+      }).catch((err) => console.error("Failed to record game:", err));
     } else {
       // Continue to next row - correct sound if has some correct letters
       const hasCorrect = states.some((s) => s === "correct");
@@ -177,7 +185,7 @@ export function useGame(difficulty: Difficulty) {
       setCurrentRow((prev) => prev + 1);
       setCurrentGuess(targetWord[0]); // Start next guess with first letter
     }
-  }, [gameOver, currentGuess, wordLength, targetWord, currentRow, hearts, playSound, triggerRowAnimation]);
+  }, [gameOver, currentGuess, wordLength, targetWord, currentRow, hearts, playSound, triggerRowAnimation, recordGamePlayed, playerId, playerName, difficulty]);
 
   const startNewGame = useCallback(() => {
     // If game over (no hearts), reset everything
