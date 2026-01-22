@@ -521,6 +521,35 @@ body {
   background: var(--game-bg);
 }
 
+.submit-button {
+  margin-top: 12px;
+  background: var(--win95-gray);
+  border: 2px solid;
+  border-color: var(--win95-light-gray) var(--win95-dark-gray)
+    var(--win95-dark-gray) var(--win95-light-gray);
+  padding: 8px 32px;
+  font-family: var(--font-system);
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  color: var(--win95-black);
+}
+
+.submit-button:active:not(:disabled) {
+  border-color: var(--win95-dark-gray) var(--win95-light-gray)
+    var(--win95-light-gray) var(--win95-dark-gray);
+}
+
+.submit-button:focus {
+  outline: 1px dotted var(--win95-black);
+  outline-offset: -4px;
+}
+
+.submit-button:disabled {
+  color: var(--win95-dark-gray);
+  cursor: not-allowed;
+}
+
 .board-row {
   display: flex;
   gap: 2px;

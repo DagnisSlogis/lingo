@@ -54,8 +54,10 @@ export function GameBoard({
     if (!disabled) {
       // Small delay to ensure DOM is ready, especially on mobile
       setTimeout(() => {
+        // Focus first with preventScroll to avoid conflicts
+        inputRef.current?.focus({ preventScroll: true });
+        // Then scroll the board into view
         boardRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-        inputRef.current?.focus();
       }, 100);
     }
   }, [disabled]);
@@ -63,8 +65,9 @@ export function GameBoard({
   // Also focus on currentRow change (new round)
   useEffect(() => {
     if (!disabled) {
+      // Focus first, then scroll
+      inputRef.current?.focus({ preventScroll: true });
       boardRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-      inputRef.current?.focus();
     }
   }, [currentRow]);
 
@@ -84,19 +87,23 @@ export function GameBoard({
       // Skip if the event is from the hidden input (it handles its own keys)
       if (e.target === inputRef.current) return;
 
-      // Only handle Enter and Backspace globally (when input not focused)
+      // Handle Enter and Backspace globally
       if (e.key === "Enter") {
         e.preventDefault();
         onSubmit();
       } else if (e.key === "Backspace") {
         e.preventDefault();
         onBackspace();
+      } else if (e.key.length === 1 && /^[a-zA-ZāčēģīķļņšūžĀČĒĢĪĶĻŅŠŪŽ]$/.test(e.key)) {
+        // Also handle letter keys globally as fallback
+        e.preventDefault();
+        onKeyPress(e.key.toLowerCase());
       }
     }
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onSubmit, onBackspace, disabled]);
+  }, [onSubmit, onBackspace, onKeyPress, disabled]);
 
   const processInput = (input: HTMLInputElement) => {
     const value = input.value;
@@ -220,6 +227,19 @@ export function GameBoard({
         )}
 
       </div>
+
+      {/* Submit button */}
+      <button
+        className="submit-button"
+        onClick={() => {
+          onSubmit();
+          // Return focus to the game input after clicking
+          inputRef.current?.focus({ preventScroll: true });
+        }}
+        disabled={disabled || gameOver}
+      >
+        Minēt
+      </button>
     </div>
   );
 }
