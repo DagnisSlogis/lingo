@@ -1,4 +1,4 @@
-import { query, mutation } from "./_generated/server";
+import { query, mutation, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 
 // Join the matchmaking queue
@@ -177,5 +177,34 @@ export const getQueueCount = query({
       .collect();
 
     return entries.length;
+  },
+});
+
+// Cleanup stale matchmaking entries (called by cron)
+// Only removes "matched" entries older than 5 minutes (leftover after match started)
+// "searching" entries are NOT removed - player might still be waiting
+export const cleanupStaleEntries = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const STALE_THRESHOLD_MS = 5 * 60 * 1000; // 5 minutes
+    const now = Date.now();
+
+    // Only get "matched" entries - these are safe to clean up
+    const matchedEntries = await ctx.db
+      .query("matchmaking")
+      .withIndex("by_status", (q) => q.eq("status", "matched"))
+      .collect();
+
+    const staleEntries = matchedEntries.filter(
+      (entry) => now - entry.createdAt > STALE_THRESHOLD_MS
+    );
+
+    let cleanedCount = 0;
+    for (const entry of staleEntries) {
+      await ctx.db.delete(entry._id);
+      cleanedCount++;
+    }
+
+    return { cleanedCount };
   },
 });
