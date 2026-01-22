@@ -187,7 +187,7 @@ function InviteScreen() {
         </button>
         {"share" in navigator && (
           <button className="win95-button" onClick={handleShare}>
-            Dalīties
+            Nosūtīt draugam
           </button>
         )}
       </div>
