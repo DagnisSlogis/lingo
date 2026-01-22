@@ -161,9 +161,11 @@ export const updateMatchRatings = mutation({
       rankedLosses: player1Won ? player2.rankedLosses + 1 : player2.rankedLosses,
     });
 
-    // Mark ratings as updated (idempotency flag)
+    // Mark ratings as updated and store changes for display (idempotency flag)
     await ctx.db.patch(args.matchId, {
       ratingsUpdated: true,
+      player1RatingChange: player1Change,
+      player2RatingChange: player2Change,
     });
 
     return {

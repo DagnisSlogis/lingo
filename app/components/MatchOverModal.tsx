@@ -14,6 +14,9 @@ interface MatchOverModalProps {
   // Rematch state
   rematchState?: "idle" | "waiting" | "opponent_waiting" | "starting" | "opponent_left";
   onCancelRematch?: () => void;
+  // Rating changes
+  myRatingChange?: number | null;
+  opponentRatingChange?: number | null;
 }
 
 export function MatchOverModal({
@@ -29,6 +32,8 @@ export function MatchOverModal({
   onFindNewMatch,
   rematchState = "idle",
   onCancelRematch,
+  myRatingChange,
+  opponentRatingChange,
 }: MatchOverModalProps) {
   const getRematchButtonText = () => {
     switch (rematchState) {
@@ -77,6 +82,12 @@ export function MatchOverModal({
             {getResultText()}
           </div>
 
+          {myRatingChange !== null && myRatingChange !== undefined && (
+            <div className={`rating-change ${myRatingChange >= 0 ? "positive" : "negative"}`}>
+              {myRatingChange >= 0 ? "+" : ""}{myRatingChange} ⭐
+            </div>
+          )}
+
           {lastWord && (
             <div className="match-last-word">
               <span className="last-word-label">Vārds:</span>
@@ -88,10 +99,20 @@ export function MatchOverModal({
             <div className={`score-row ${isWinner && !isDraw ? "winner" : ""}`}>
               <span className="score-name">{myName}</span>
               <span className="score-value">{myScore}</span>
+              {myRatingChange !== null && myRatingChange !== undefined && (
+                <span className={`score-rating ${myRatingChange >= 0 ? "positive" : "negative"}`}>
+                  {myRatingChange >= 0 ? "+" : ""}{myRatingChange}
+                </span>
+              )}
             </div>
             <div className={`score-row ${!isWinner && !isDraw ? "winner" : ""}`}>
               <span className="score-name">{opponentName}</span>
               <span className="score-value">{opponentScore}</span>
+              {opponentRatingChange !== null && opponentRatingChange !== undefined && (
+                <span className={`score-rating ${opponentRatingChange >= 0 ? "positive" : "negative"}`}>
+                  {opponentRatingChange >= 0 ? "+" : ""}{opponentRatingChange}
+                </span>
+              )}
             </div>
           </div>
 

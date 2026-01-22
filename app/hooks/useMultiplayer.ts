@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
+import type { Id } from "../../convex/_generated/dataModel";
 import type { BoardRow, RowAnimation } from "~/components/GameBoard";
 import type { TileState } from "~/components/Tile";
 import { generatePlayerName, generatePlayerId } from "~/lib/nameGenerator";
@@ -24,6 +25,8 @@ interface MultiplayerState {
   winnerId: string | null;
   isWinner: boolean;
   isDraw: boolean;
+  myRatingChange: number | null;
+  opponentRatingChange: number | null;
 }
 
 interface RoundOverInfo {
@@ -68,6 +71,9 @@ interface Match {
   // Track if player left
   player1Left?: boolean;
   player2Left?: boolean;
+  // Rating changes after match ends
+  player1RatingChange?: number;
+  player2RatingChange?: number;
 }
 
 interface Player {
@@ -86,7 +92,7 @@ function createEmptyBoard(wordLength: number): BoardRow[] {
   }));
 }
 
-export function useMultiplayer(matchId: string) {
+export function useMultiplayer(matchId: string | Id<"matches">) {
   const { play: playSound } = useSound();
 
   const [playerId] = useState(() => {
@@ -127,7 +133,7 @@ export function useMultiplayer(matchId: string) {
   const matchQuery = api.matches.getMatch;
   const match = useQuery(
     matchQuery,
-    matchId ? { matchId } : "skip"
+    matchId ? { matchId: matchId as Id<"matches"> } : "skip"
   ) as Match | undefined | null;
 
   // Get current player info
@@ -258,12 +264,12 @@ export function useMultiplayer(matchId: string) {
   }, [match?.guesses.length, lastProcessedGuessCount, match?.guessResults, playSound, triggerRowAnimation, match?.guesses, playerId]);
 
   // Store refs for timer callback to avoid stale closures
-  const matchIdRef = useRef(matchId);
+  const matchIdRef = useRef<Id<"matches"> | null>(matchId as Id<"matches">);
   const playerIdRef = useRef(playerId);
   const skipTurnMutationRef = useRef(skipTurnMutation);
 
   useEffect(() => {
-    matchIdRef.current = matchId;
+    matchIdRef.current = matchId as Id<"matches">;
     playerIdRef.current = playerId;
     skipTurnMutationRef.current = skipTurnMutation;
   }, [matchId, playerId, skipTurnMutation]);
@@ -299,10 +305,11 @@ export function useMultiplayer(matchId: string) {
       const remaining = calculateTimeRemaining();
       setTimeRemaining(remaining);
 
-      // Only the active player triggers skip turn when time runs out
-      if (remaining <= 0 && isMyTurn) {
+      // Either player can trigger skip turn when time runs out
+      // Server validates that time has actually expired
+      if (remaining <= 0) {
         if (timerRef.current) clearInterval(timerRef.current);
-        if (skipTurnMutationRef.current) {
+        if (skipTurnMutationRef.current && matchIdRef.current) {
           skipTurnMutationRef.current({
             matchId: matchIdRef.current,
             playerId: playerIdRef.current
@@ -386,7 +393,7 @@ export function useMultiplayer(matchId: string) {
     if (match?.status === "finished" && match.winnerId && match._id) {
       // Call server-side mutation that handles idempotency
       updateMatchRatingsMutation({
-        matchId: match._id,
+        matchId: match._id as Id<"matches">,
       });
 
       // Clear matchmaking entries
@@ -408,7 +415,7 @@ export function useMultiplayer(matchId: string) {
 
     const timer = setTimeout(() => {
       updateTypingStatusMutation({
-        matchId,
+        matchId: matchId as Id<"matches">,
         playerId,
         currentGuess,
       });
@@ -468,7 +475,7 @@ export function useMultiplayer(matchId: string) {
 
     try {
       await submitGuessMutation({
-        matchId,
+        matchId: matchId as Id<"matches">,
         playerId,
         guess,
       });
@@ -482,7 +489,7 @@ export function useMultiplayer(matchId: string) {
 
   const forfeitMatch = useCallback(async () => {
     try {
-      await forfeitMatchMutation({ matchId, playerId });
+      await forfeitMatchMutation({ matchId: matchId as Id<"matches">, playerId });
     } catch (error) {
       console.error("Failed to forfeit:", error);
     }
@@ -504,6 +511,8 @@ export function useMultiplayer(matchId: string) {
     winnerId: match?.winnerId ?? null,
     isWinner: match?.winnerId === playerId,
     isDraw: match?.isDraw ?? false,
+    myRatingChange: isPlayer1 ? (match?.player1RatingChange ?? null) : (match?.player2RatingChange ?? null),
+    opponentRatingChange: isPlayer1 ? (match?.player2RatingChange ?? null) : (match?.player1RatingChange ?? null),
   };
 
   // Get opponent's current guess

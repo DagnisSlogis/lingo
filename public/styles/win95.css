@@ -1625,6 +1625,36 @@ body {
   font-weight: bold;
 }
 
+.score-rating {
+  margin-left: 10px;
+  font-weight: bold;
+  font-size: 0.9em;
+}
+
+.score-rating.positive {
+  color: #228822;
+}
+
+.score-rating.negative {
+  color: #cc2222;
+}
+
+/* Big rating change display */
+.rating-change {
+  text-align: center;
+  font-size: 1.5em;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.rating-change.positive {
+  color: #228822;
+}
+
+.rating-change.negative {
+  color: #cc2222;
+}
+
 .modal-buttons {
   display: flex;
   justify-content: center;

@@ -363,6 +363,7 @@ export const submitGuess = mutation({
 
 // Skip turn (called when timer expires)
 // Timer running out = empty guess + player loses a heart
+// Either player can trigger this, but server validates time has actually expired
 export const skipTurn = mutation({
   args: {
     matchId: v.id("matches"),
@@ -375,11 +376,22 @@ export const skipTurn = mutation({
       return { success: false, error: "Invalid match" };
     }
 
-    if (match.currentTurn !== args.playerId) {
-      return { success: false, error: "Not your turn" };
+    // Verify caller is a player in this match
+    const isCallerPlayer1 = match.player1Id === args.playerId;
+    const isCallerPlayer2 = match.player2Id === args.playerId;
+    if (!isCallerPlayer1 && !isCallerPlayer2) {
+      return { success: false, error: "Not a player in this match" };
     }
 
-    const isPlayer1 = match.player1Id === args.playerId;
+    // Server-side validation: check if turn time has actually expired (30 seconds)
+    const TURN_TIME_LIMIT_MS = 30 * 1000;
+    const timeElapsed = Date.now() - (match.turnStartedAt || 0);
+    if (timeElapsed < TURN_TIME_LIMIT_MS) {
+      return { success: false, error: "Turn time has not expired yet" };
+    }
+
+    // Determine who is the active player (whose turn is being skipped)
+    const isPlayer1 = match.player1Id === match.currentTurn;
     const opponentId = isPlayer1 ? match.player2Id : match.player1Id;
 
     // Count as a wasted guess - empty string with all absent states

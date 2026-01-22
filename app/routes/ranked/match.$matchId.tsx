@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
+import type { Id } from "../../../convex/_generated/dataModel";
 import { useMultiplayer } from "~/hooks/useMultiplayer";
 import { GameBoard } from "~/components/GameBoard";
 import { Timer } from "~/components/Timer";
@@ -86,7 +87,7 @@ function MatchGame() {
     try {
       setRematchRequested(true);
       const result = await requestRematchMutation({
-        matchId,
+        matchId: matchId as Id<"matches">,
         playerId,
       });
 
@@ -108,7 +109,7 @@ function MatchGame() {
 
     try {
       await cancelRematchMutation({
-        matchId,
+        matchId: matchId as Id<"matches">,
         playerId,
       });
       setRematchRequested(false);
@@ -121,7 +122,7 @@ function MatchGame() {
     // Mark player as having left the match
     if (matchId && playerId && state.matchOver) {
       try {
-        await leaveMatchMutation({ matchId, playerId });
+        await leaveMatchMutation({ matchId: matchId as Id<"matches">, playerId });
       } catch (error) {
         console.error("Failed to mark as left:", error);
       }
@@ -133,7 +134,7 @@ function MatchGame() {
     // Mark player as having left the match, then navigate to matchmaking
     if (matchId && playerId) {
       try {
-        await leaveMatchMutation({ matchId, playerId });
+        await leaveMatchMutation({ matchId: matchId as Id<"matches">, playerId });
       } catch (error) {
         console.error("Failed to mark as left:", error);
       }
@@ -223,6 +224,8 @@ function MatchGame() {
           onFindNewMatch={handleFindNewMatch}
           rematchState={rematchState}
           onCancelRematch={handleCancelRematch}
+          myRatingChange={state.myRatingChange}
+          opponentRatingChange={state.opponentRatingChange}
         />
       )}
 

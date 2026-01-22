@@ -66,6 +66,9 @@ export default defineSchema({
     rematchMatchId: v.optional(v.id("matches")),
     // Track if ratings have been updated (prevents duplicate updates)
     ratingsUpdated: v.optional(v.boolean()),
+    // Rating changes after match ends (for display in modal)
+    player1RatingChange: v.optional(v.number()),
+    player2RatingChange: v.optional(v.number()),
     // Live typing - shows what opponent is currently typing
     player1CurrentGuess: v.optional(v.string()),
     player2CurrentGuess: v.optional(v.string()),
