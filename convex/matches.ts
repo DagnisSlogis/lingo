@@ -1,4 +1,4 @@
-import { query, mutation } from "./_generated/server";
+import { query, mutation, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 
 // Helper function to validate a guess against the target word
@@ -721,5 +721,37 @@ export const getPlayerMatches = query({
     allMatches.sort((a, b) => b.createdAt - a.createdAt);
 
     return allMatches.slice(0, args.limit);
+  },
+});
+
+// Cleanup stale/abandoned matches (called by cron)
+// Matches inactive for 5+ minutes are marked as abandoned (draw, no ELO change)
+export const cleanupStaleMatches = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const STALE_THRESHOLD_MS = 5 * 60 * 1000; // 5 minutes
+    const now = Date.now();
+
+    // Find all active matches that haven't been updated in 5+ minutes
+    const activeMatches = await ctx.db
+      .query("matches")
+      .withIndex("by_status", (q) => q.eq("status", "active"))
+      .collect();
+
+    const staleMatches = activeMatches.filter(
+      (match) => now - match.updatedAt > STALE_THRESHOLD_MS
+    );
+
+    let cleanedCount = 0;
+    for (const match of staleMatches) {
+      await ctx.db.patch(match._id, {
+        status: "finished",
+        isDraw: true, // No winner, no ELO change
+        updatedAt: now,
+      });
+      cleanedCount++;
+    }
+
+    return { cleanedCount };
   },
 });
